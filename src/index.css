@@ -4,42 +4,48 @@
 
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Noto+Sans+JP:wght@300;400;500;700&display=swap');
 
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
+
+@import url("https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600;700&display=swap");
+
+@import url("https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap");
+
 @layer base {
   :root {
     /* Bento Grid + Glassmorphism Theme - Inspired by Japan */
-    --background: 175 50% 8%;
-    --foreground: 40 30% 95%;
+    --background: 209 40% 96%;
+    --foreground: 222 47% 11%;
 
-    --card: 40 30% 95%;
-    --card-foreground: 175 50% 12%;
+    --card: 210 40% 98%;
+    --card-foreground: 222 47% 11%;
 
-    --popover: 40 30% 95%;
-    --popover-foreground: 175 50% 12%;
+    --popover: 214 31% 91%;
+    --popover-foreground: 222 47% 11%;
 
     /* Japan Red - Primary accent */
-    --primary: 355 70% 45%;
-    --primary-foreground: 40 30% 98%;
+    --primary: 200 98% 39%;
+    --primary-foreground: 204 100% 97%;
 
     /* Cream/Off-white - Secondary */
-    --secondary: 40 30% 92%;
-    --secondary-foreground: 175 50% 12%;
+    --secondary: 215 24% 26%;
+    --secondary-foreground: 210 40% 98%;
 
     /* Muted teal */
-    --muted: 175 30% 20%;
-    --muted-foreground: 175 20% 70%;
+    --muted: 215 20% 65%;
+    --muted-foreground: 222 47% 11%;
 
     /* Accent - Teal highlight */
-    --accent: 170 60% 25%;
-    --accent-foreground: 40 30% 95%;
+    --accent: 210 40% 98%;
+    --accent-foreground: 215 19% 34%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 72% 50%;
+    --destructive-foreground: 0 85% 97%;
 
-    --border: 175 30% 25%;
-    --input: 175 30% 25%;
-    --ring: 355 70% 45%;
+    --border: 212 26% 83%;
+    --input: 212 26% 83%;
+    --ring: 200 98% 39%;
 
-    --radius: 1.25rem;
+    --radius: 0.5rem;
 
     /* Custom tokens for Bento Grid */
     --bento-bg: 40 25% 94%;
@@ -53,49 +59,86 @@
     --glass-opacity: 0.85;
 
     /* Shadows */
-    --shadow-sm: 0 2px 8px -2px hsl(175 50% 5% / 0.3);
-    --shadow-md: 0 8px 24px -8px hsl(175 50% 5% / 0.4);
-    --shadow-lg: 0 16px 48px -12px hsl(175 50% 5% / 0.5);
+    --shadow-sm: 0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 1px 2px -1px hsl(0 0% 0% / 0.1);
+    --shadow-md: 0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 2px 4px -1px hsl(0 0% 0% / 0.1);
+    --shadow-lg: 0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 4px 6px -1px hsl(0 0% 0% / 0.1);
     --shadow-glow: 0 0 40px hsl(355 70% 45% / 0.3);
 
     --sidebar-background: 175 50% 8%;
-    --sidebar-foreground: 40 30% 95%;
-    --sidebar-primary: 355 70% 45%;
-    --sidebar-primary-foreground: 40 30% 98%;
-    --sidebar-accent: 170 60% 25%;
-    --sidebar-accent-foreground: 40 30% 95%;
-    --sidebar-border: 175 30% 25%;
-    --sidebar-ring: 355 70% 45%;
+    --sidebar-foreground: 222 47% 11%;
+    --sidebar-primary: 200 98% 39%;
+    --sidebar-primary-foreground: 204 100% 97%;
+    --sidebar-accent: 215 24% 26%;
+    --sidebar-accent-foreground: 210 40% 98%;
+    --sidebar-border: 212 26% 83%;
+    --sidebar-ring: 200 98% 39%;
+    --chart-1: 198 93% 59%;
+    --chart-2: 213 93% 67%;
+    --chart-3: 215 20% 65%;
+    --chart-4: 215 16% 46%;
+    --chart-5: 215 19% 34%;
+    --sidebar: 210 40% 98%;
+    --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif;
+    --font-serif: 'Lora', ui-serif, Georgia, Cambria, 'Times New Roman', Times, serif;
+    --font-mono: 'Space Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+    --shadow-2xs: 0 1px 3px 0px hsl(0 0% 0% / 0.05);
+    --shadow-xs: 0 1px 3px 0px hsl(0 0% 0% / 0.05);
+    --shadow: 0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 1px 2px -1px hsl(0 0% 0% / 0.1);
+    --shadow-xl: 0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 8px 10px -1px hsl(0 0% 0% / 0.1);
+    --shadow-2xl: 0 1px 3px 0px hsl(0 0% 0% / 0.25);
+    --tracking-normal: 0em;
+    --spacing: 0.25rem;
   }
 
   .dark {
-    --background: 175 50% 8%;
-    --foreground: 40 30% 95%;
+    --background: 222 47% 11%;
+    --foreground: 210 40% 98%;
 
-    --card: 40 30% 95%;
-    --card-foreground: 175 50% 12%;
+    --card: 217 32% 17%;
+    --card-foreground: 210 40% 98%;
 
-    --popover: 40 30% 95%;
-    --popover-foreground: 175 50% 12%;
+    --popover: 215 24% 26%;
+    --popover-foreground: 210 40% 98%;
 
-    --primary: 355 70% 45%;
-    --primary-foreground: 40 30% 98%;
+    --primary: 198 93% 59%;
+    --primary-foreground: 204 80% 15%;
 
-    --secondary: 40 30% 92%;
-    --secondary-foreground: 175 50% 12%;
+    --secondary: 212 26% 83%;
+    --secondary-foreground: 228 84% 4%;
 
-    --muted: 175 30% 20%;
-    --muted-foreground: 175 20% 70%;
+    --muted: 215 16% 46%;
+    --muted-foreground: 210 40% 98%;
 
-    --accent: 170 60% 25%;
-    --accent-foreground: 40 30% 95%;
+    --accent: 228 84% 4%;
+    --accent-foreground: 215 20% 65%;
 
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 85% 97%;
 
-    --border: 175 30% 25%;
-    --input: 175 30% 25%;
-    --ring: 355 70% 45%;
+    --border: 215 19% 34%;
+    --input: 215 19% 34%;
+    --ring: 198 93% 59%;
+    --chart-1: 199 95% 73%;
+    --chart-2: 211 96% 78%;
+    --chart-3: 215 20% 65%;
+    --chart-4: 215 16% 46%;
+    --chart-5: 215 19% 34%;
+    --sidebar: 217 32% 17%;
+    --sidebar-foreground: 210 40% 98%;
+    --sidebar-primary: 198 93% 59%;
+    --sidebar-primary-foreground: 204 80% 15%;
+    --sidebar-accent: 215 20% 65%;
+    --sidebar-accent-foreground: 228 84% 4%;
+    --sidebar-border: 215 19% 34%;
+    --sidebar-ring: 198 93% 59%;
+    --shadow-2xs: 0 1px 3px 0px hsl(0 0% 0% / 0.05);
+    --shadow-xs: 0 1px 3px 0px hsl(0 0% 0% / 0.05);
+    --shadow-sm: 0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 1px 2px -1px hsl(0 0% 0% / 0.1);
+    --shadow: 0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 1px 2px -1px hsl(0 0% 0% / 0.1);
+    --shadow-md: 0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 2px 4px -1px hsl(0 0% 0% / 0.1);
+    --shadow-lg: 0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 4px 6px -1px hsl(0 0% 0% / 0.1);
+    --shadow-xl: 0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 8px 10px -1px hsl(0 0% 0% / 0.1);
+    --shadow-2xl: 0 1px 3px 0px hsl(0 0% 0% / 0.25);
   }
 }
 
