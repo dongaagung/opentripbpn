@@ -63,14 +63,20 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background japan-wave-bg seigaiha-pattern">
       <Navbar />
-      <main>
+      <main className="relative z-10">
         <HeroSection />
-        <PackagesSection />
+        <div className="sakura-float">
+          <PackagesSection />
+        </div>
         <GallerySection />
-        <TestimonialsSection />
-        <ContactSection />
+        <div className="asanoha-pattern">
+          <TestimonialsSection />
+        </div>
+        <div className="kanagawa-wave">
+          <ContactSection />
+        </div>
       </main>
       <Footer />
       <WhatsAppFloat />
