@@ -1,11 +1,11 @@
 import { ChevronDown, MapPin, Calendar, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { BentoCard } from "@/components/ui/BentoCard";
-import heroImage from "@/assets/hero-japan.jpg";
-import tokyoImage from "@/assets/tokyo.jpg";
-import kyotoImage from "@/assets/kyoto.jpg";
+import { useGalleryImages } from "@/hooks/useGalleryImages";
 
 const HeroSection = () => {
+  const { getImage, isLoading } = useGalleryImages(5);
+
   const scrollToPackages = () => {
     const element = document.querySelector("#packages");
     if (element) {
@@ -36,7 +36,7 @@ const HeroSection = () => {
             hover={false}
           >
             <img 
-              src={heroImage} 
+              src={getImage(0)} 
               alt="Mount Fuji with cherry blossoms" 
               className="absolute inset-0 w-full h-full object-cover"
             />
@@ -87,8 +87,8 @@ const HeroSection = () => {
             hover={true}
           >
             <img 
-              src={tokyoImage} 
-              alt="Tokyo skyline" 
+              src={getImage(1)} 
+              alt="Gallery preview" 
               className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 hover:scale-110"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-card-foreground/70 to-transparent" />
@@ -118,8 +118,8 @@ const HeroSection = () => {
             hover={true}
           >
             <img 
-              src={kyotoImage} 
-              alt="Kyoto temple" 
+              src={getImage(2)} 
+              alt="Gallery preview" 
               className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 hover:scale-110"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-card-foreground/70 to-transparent" />
