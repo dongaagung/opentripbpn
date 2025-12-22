@@ -1,11 +1,7 @@
-import { useState } from "react";
-import { Play, X, MapPin } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Play, X, MapPin, ImageIcon } from "lucide-react";
 import { BentoCard } from "@/components/ui/BentoCard";
-import tokyoImage from "@/assets/tokyo.jpg";
-import kyotoImage from "@/assets/kyoto.jpg";
-import osakaImage from "@/assets/osaka.jpg";
-import hokkaidoImage from "@/assets/hokkaido.jpg";
-import heroImage from "@/assets/hero-japan.jpg";
+import { supabase } from "@/integrations/supabase/client";
 
 interface GalleryItem {
   id: string;
@@ -17,73 +13,97 @@ interface GalleryItem {
   category: string;
 }
 
-const galleryItems: GalleryItem[] = [
-  {
-    id: "1",
-    type: "image",
-    src: heroImage,
-    thumbnail: heroImage,
-    caption: "Mount Fuji & Sakura",
-    location: "Kawaguchiko",
-    category: "Tokyo",
-  },
-  {
-    id: "2",
-    type: "image",
-    src: tokyoImage,
-    thumbnail: tokyoImage,
-    caption: "Tokyo Tower Night View",
-    location: "Minato City",
-    category: "Tokyo",
-  },
-  {
-    id: "3",
-    type: "image",
-    src: kyotoImage,
-    thumbnail: kyotoImage,
-    caption: "Kinkaku-ji Temple",
-    location: "Kyoto",
-    category: "Kyoto",
-  },
-  {
-    id: "4",
-    type: "image",
-    src: osakaImage,
-    thumbnail: osakaImage,
-    caption: "Osaka Castle Sakura",
-    location: "Chuo-ku",
-    category: "Osaka",
-  },
-  {
-    id: "5",
-    type: "image",
-    src: hokkaidoImage,
-    thumbnail: hokkaidoImage,
-    caption: "Winter Onsen Experience",
-    location: "Niseko",
-    category: "Hokkaido",
-  },
-  {
-    id: "6",
-    type: "image",
-    src: heroImage,
-    thumbnail: heroImage,
-    caption: "Shinkansen & Fuji",
-    location: "Shizuoka",
-    category: "Tokyo",
-  },
-];
-
-const categories = ["Semua", "Tokyo", "Kyoto", "Osaka", "Hokkaido"];
-
 const GallerySection = () => {
+  const [galleryItems, setGalleryItems] = useState<GalleryItem[]>([]);
+  const [categories, setCategories] = useState<string[]>(["Semua"]);
   const [activeCategory, setActiveCategory] = useState("Semua");
   const [selectedItem, setSelectedItem] = useState<GalleryItem | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    fetchGalleryItems();
+  }, []);
+
+  const fetchGalleryItems = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("gallery")
+        .select("*")
+        .eq("is_published", true)
+        .order("display_order", { ascending: true });
+
+      if (error) throw error;
+
+      if (data) {
+        const items: GalleryItem[] = data.map((item) => ({
+          id: item.id,
+          type: item.file_type === "video" ? "video" : "image",
+          src: item.file_url,
+          thumbnail: item.file_url,
+          caption: item.title,
+          location: item.description || "",
+          category: item.category || "General",
+        }));
+
+        setGalleryItems(items);
+
+        // Extract unique categories
+        const uniqueCategories = [
+          "Semua",
+          ...new Set(items.map((item) => item.category)),
+        ];
+        setCategories(uniqueCategories);
+      }
+    } catch (error) {
+      console.error("Error fetching gallery:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const filteredItems =
     activeCategory === "Semua"
       ? galleryItems
       : galleryItems.filter((item) => item.category === activeCategory);
+
+  if (isLoading) {
+    return (
+      <section id="gallery" className="py-20 relative">
+        <div className="container mx-auto px-4">
+          <div className="text-center">
+            <div className="animate-pulse">
+              <div className="h-8 bg-muted rounded w-48 mx-auto mb-4"></div>
+              <div className="h-4 bg-muted rounded w-96 mx-auto"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  if (galleryItems.length === 0) {
+    return (
+      <section id="gallery" className="py-20 relative">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-12">
+            <span className="text-primary font-medium text-sm uppercase tracking-wider">
+              Galeri
+            </span>
+            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mt-3 mb-4">
+              Momen Berharga
+            </h2>
+            <p className="text-muted-foreground max-w-2xl mx-auto">
+              Koleksi foto dan video dari trip-trip sebelumnya bersama peserta kami
+            </p>
+          </div>
+          <div className="flex flex-col items-center justify-center py-16 text-muted-foreground">
+            <ImageIcon className="w-16 h-16 mb-4 opacity-50" />
+            <p>Belum ada foto di galeri</p>
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section id="gallery" className="py-20 relative">
@@ -145,10 +165,12 @@ const GallerySection = () => {
 
               {/* Overlay Content */}
               <div className="absolute inset-0 flex flex-col justify-end p-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300 min-h-[200px]">
-                <div className="flex items-center gap-2 text-bento-cream/80 mb-1">
-                  <MapPin className="w-3 h-3" />
-                  <span className="text-xs">{item.location}</span>
-                </div>
+                {item.location && (
+                  <div className="flex items-center gap-2 text-bento-cream/80 mb-1">
+                    <MapPin className="w-3 h-3" />
+                    <span className="text-xs">{item.location}</span>
+                  </div>
+                )}
                 <p className="text-bento-cream font-medium text-sm">{item.caption}</p>
               </div>
 
@@ -182,19 +204,30 @@ const GallerySection = () => {
             className="max-w-5xl w-full max-h-[90vh] relative"
             onClick={(e) => e.stopPropagation()}
           >
-            <img
-              src={selectedItem.src}
-              alt={selectedItem.caption}
-              className="w-full h-auto max-h-[80vh] object-contain rounded-2xl"
-            />
+            {selectedItem.type === "video" ? (
+              <video
+                src={selectedItem.src}
+                controls
+                autoPlay
+                className="w-full h-auto max-h-[80vh] object-contain rounded-2xl"
+              />
+            ) : (
+              <img
+                src={selectedItem.src}
+                alt={selectedItem.caption}
+                className="w-full h-auto max-h-[80vh] object-contain rounded-2xl"
+              />
+            )}
             <div className="mt-4 text-center">
               <p className="text-foreground text-xl font-semibold">
                 {selectedItem.caption}
               </p>
-              <div className="flex items-center justify-center gap-2 text-muted-foreground mt-2">
-                <MapPin className="w-4 h-4" />
-                <span>{selectedItem.location}</span>
-              </div>
+              {selectedItem.location && (
+                <div className="flex items-center justify-center gap-2 text-muted-foreground mt-2">
+                  <MapPin className="w-4 h-4" />
+                  <span>{selectedItem.location}</span>
+                </div>
+              )}
             </div>
           </div>
         </div>
