@@ -14,6 +14,18 @@ interface GalleryItem {
   overlayColor?: string;
 }
 
+// Different hover effects for variety
+const hoverEffects = [
+  "hover:translate-y-[-8px] hover:scale-[1.02] hover:rotate-0",
+  "hover:rotate-[-2deg] hover:scale-[1.03]",
+  "hover:rotate-[2deg] hover:scale-[1.03]",
+  "hover:scale-[1.05] hover:translate-y-0",
+  "hover:translate-y-[-12px] hover:scale-[1.01]",
+  "hover:scale-[1.04] hover:rotate-[-1deg]",
+  "hover:translate-y-[-6px] hover:scale-[1.02] hover:rotate-[1deg]",
+  "hover:scale-[1.03] hover:translate-x-[4px]",
+];
+
 const GallerySection = () => {
   const [galleryItems, setGalleryItems] = useState<GalleryItem[]>([]);
   const [categories, setCategories] = useState<string[]>(["Semua"]);
@@ -129,6 +141,11 @@ const GallerySection = () => {
     return patterns[index % patterns.length];
   };
 
+  // Get hover effect for variety
+  const getHoverEffect = (index: number) => {
+    return hoverEffects[index % hoverEffects.length];
+  };
+
   if (isLoading) {
     return (
       <section id="gallery" className="py-20 bg-background">
@@ -169,19 +186,37 @@ const GallerySection = () => {
   }
 
   return (
-    <section id="gallery" className="py-20 bg-card/50">
-      <div className="container mx-auto px-4">
+    <section id="gallery" className="py-20 bg-card/50 relative overflow-hidden">
+      {/* Japanese-style decorative elements */}
+      <div className="absolute inset-0 pointer-events-none">
+        {/* Grid pattern overlay */}
+        <div className="absolute inset-0 opacity-[0.03]" style={{
+          backgroundImage: `
+            linear-gradient(to right, hsl(var(--foreground)) 1px, transparent 1px),
+            linear-gradient(to bottom, hsl(var(--foreground)) 1px, transparent 1px)
+          `,
+          backgroundSize: '60px 60px'
+        }} />
+        {/* Circular accent */}
+        <div className="absolute -top-32 -right-32 w-64 h-64 rounded-full border border-primary/10" />
+        <div className="absolute -bottom-24 -left-24 w-48 h-48 rounded-full border border-primary/5" />
+        {/* Japanese wave pattern hint */}
+        <div className="absolute top-20 left-10 w-20 h-20 border-t-2 border-l-2 border-primary/10 rounded-tl-full" />
+        <div className="absolute bottom-20 right-10 w-16 h-16 border-b-2 border-r-2 border-primary/10 rounded-br-full" />
+      </div>
+
+      <div className="container mx-auto px-4 relative z-10">
         {/* Section Header */}
         <div className="text-center mb-12">
-          <span className="text-primary font-medium text-sm uppercase tracking-wider flex items-center justify-center gap-2">
+          <span className="text-primary font-lexend font-medium text-sm uppercase tracking-[0.2em] flex items-center justify-center gap-2">
             <Sparkles className="w-4 h-4" />
-            Galeri AI
+            ギャラリー
             <Sparkles className="w-4 h-4" />
           </span>
-          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mt-3 mb-4">
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-heading font-bold text-foreground mt-3 mb-4">
             Momen Berharga
           </h2>
-          <p className="text-muted-foreground max-w-2xl mx-auto">
+          <p className="text-muted-foreground max-w-2xl mx-auto font-body">
             Koleksi foto dari trip-trip sebelumnya dengan caption cerdas dari AI
           </p>
         </div>
@@ -192,7 +227,7 @@ const GallerySection = () => {
             <button
               key={category}
               onClick={() => setActiveCategory(category)}
-              className={`px-5 py-2.5 rounded-xl text-sm font-medium transition-all duration-300 ${
+              className={`px-5 py-2.5 rounded-xl text-sm font-lexend font-medium transition-all duration-300 ${
                 activeCategory === category
                   ? "bg-primary text-primary-foreground shadow-lg"
                   : "bg-card text-foreground hover:bg-accent border border-border"
@@ -204,16 +239,18 @@ const GallerySection = () => {
         </div>
 
         {/* Bento Grid Gallery */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 auto-rows-[180px] md:auto-rows-[200px]">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 auto-rows-[180px] md:auto-rows-[220px]">
           {filteredItems.map((item, index) => {
             const overlayColor = getOverlayColor(item, index);
             const isAnalyzing = analyzingIds.has(item.id);
+            const hoverEffect = getHoverEffect(index);
             
             return (
               <div
                 key={item.id}
-                className={`relative overflow-hidden rounded-2xl cursor-pointer group ${getGridClass(index)}`}
+                className={`relative overflow-hidden rounded-2xl cursor-pointer group transition-all duration-500 ease-out shadow-lg hover:shadow-2xl ${getGridClass(index)} ${hoverEffect}`}
                 onClick={() => setSelectedItem(item)}
+                style={{ transformOrigin: 'center center' }}
               >
                 {/* Image */}
                 <div className="absolute inset-0">
@@ -240,6 +277,14 @@ const GallerySection = () => {
                   }}
                 />
 
+                {/* Japanese-style corner accent */}
+                <div className="absolute top-3 right-3 w-6 h-6 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                  <div className="w-full h-full border-t-2 border-r-2 border-white/40 rounded-tr-lg" />
+                </div>
+                <div className="absolute bottom-16 left-3 w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-100">
+                  <div className="w-full h-full border-b-2 border-l-2 border-white/30 rounded-bl-lg" />
+                </div>
+
                 {/* Caption - Always visible */}
                 <div className="absolute inset-x-0 bottom-0 p-4 flex flex-col justify-end">
                   {/* AI Caption with sparkle */}
@@ -247,12 +292,12 @@ const GallerySection = () => {
                     {isAnalyzing ? (
                       <div className="flex items-center gap-2">
                         <div className="w-3 h-3 border-2 border-white/50 border-t-white rounded-full animate-spin" />
-                        <span className="text-white/70 text-sm">Menganalisis...</span>
+                        <span className="text-white/70 text-sm font-body">Menganalisis...</span>
                       </div>
                     ) : (
                       <>
                         <Sparkles className="w-4 h-4 text-white/80 mt-0.5 flex-shrink-0" />
-                        <p className="text-white font-semibold text-sm md:text-base leading-tight drop-shadow-lg">
+                        <p className="text-white font-heading font-semibold text-sm md:text-base leading-tight drop-shadow-lg">
                           {item.aiCaption || item.caption}
                         </p>
                       </>
@@ -263,7 +308,7 @@ const GallerySection = () => {
                   {item.location && (
                     <div className="flex items-center gap-1.5 text-white/80 mt-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                       <MapPin className="w-3 h-3" />
-                      <span className="text-xs">{item.location}</span>
+                      <span className="text-xs font-body">{item.location}</span>
                     </div>
                   )}
                 </div>
