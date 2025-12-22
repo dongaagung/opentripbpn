@@ -79,13 +79,13 @@ const HeroSection = () => {
                 Pengalaman
               </span>
               <div className="mt-4">
-                <span className="text-5xl md:text-6xl font-bold">2</span>
-                <p className="text-primary-foreground/90 mt-2">Trip telah dilaksanakan - 2026 akan ada 3-4 Trip</p>
+                <span className="text-5xl md:text-6xl font-bold">50+</span>
+                <p className="text-primary-foreground/90 mt-2">Trip telah dilaksanakan</p>
               </div>
             </div>
             <div className="mt-6 flex items-center gap-2 text-primary-foreground/80">
               <Users className="w-5 h-5" />
-              <span className="text-sm">7+ peserta puas</span>
+              <span className="text-sm">500+ peserta puas</span>
             </div>
           </BentoCard>
 
@@ -162,10 +162,10 @@ const HeroSection = () => {
             </div>
             <div className="mt-4">
               <span className="text-3xl md:text-4xl font-bold text-foreground">MAR</span>
-              <p className="text-lg text-foreground/90">2025</p>
+              <p className="text-lg text-foreground/90">2026</p>
             </div>
             <div className="mt-4 py-2 px-3 rounded-xl bg-primary/20 text-primary text-sm font-medium inline-block">
-              Slot Terbatas
+              Slot Terbatas (Hanya 8 pax)
             </div>
           </BentoCard>
 
@@ -178,7 +178,7 @@ const HeroSection = () => {
             <p className="text-card-foreground/80 text-sm mb-3">Siap untuk petualangan?</p>
             <p className="text-xl font-bold text-card-foreground mb-4">Mulai dari</p>
             <div className="flex items-baseline gap-1">
-              <span className="text-3xl font-bold text-primary">IDR 18</span>
+              <span className="text-3xl font-bold text-primary">IDR 17jt</span>
               <span className="text-lg text-primary">juta</span>
             </div>
             <p className="text-card-foreground/60 text-xs mt-2">*per orang</p>
