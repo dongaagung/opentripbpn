@@ -2,95 +2,100 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Noto+Sans+JP:wght@300;400;500;700&display=swap');
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* Bento Grid + Glassmorphism Theme - Inspired by Japan */
+    --background: 175 50% 8%;
+    --foreground: 40 30% 95%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card: 40 30% 95%;
+    --card-foreground: 175 50% 12%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover: 40 30% 95%;
+    --popover-foreground: 175 50% 12%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    /* Japan Red - Primary accent */
+    --primary: 355 70% 45%;
+    --primary-foreground: 40 30% 98%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    /* Cream/Off-white - Secondary */
+    --secondary: 40 30% 92%;
+    --secondary-foreground: 175 50% 12%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    /* Muted teal */
+    --muted: 175 30% 20%;
+    --muted-foreground: 175 20% 70%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    /* Accent - Teal highlight */
+    --accent: 170 60% 25%;
+    --accent-foreground: 40 30% 95%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --border: 175 30% 25%;
+    --input: 175 30% 25%;
+    --ring: 355 70% 45%;
 
-    --radius: 0.5rem;
+    --radius: 1.25rem;
 
-    --sidebar-background: 0 0% 98%;
+    /* Custom tokens for Bento Grid */
+    --bento-bg: 40 25% 94%;
+    --bento-glass: 40 30% 97%;
+    --bento-teal: 170 60% 22%;
+    --bento-red: 355 70% 45%;
+    --bento-cream: 40 30% 95%;
 
-    --sidebar-foreground: 240 5.3% 26.1%;
+    /* Glassmorphism */
+    --glass-blur: 20px;
+    --glass-opacity: 0.85;
 
-    --sidebar-primary: 240 5.9% 10%;
+    /* Shadows */
+    --shadow-sm: 0 2px 8px -2px hsl(175 50% 5% / 0.3);
+    --shadow-md: 0 8px 24px -8px hsl(175 50% 5% / 0.4);
+    --shadow-lg: 0 16px 48px -12px hsl(175 50% 5% / 0.5);
+    --shadow-glow: 0 0 40px hsl(355 70% 45% / 0.3);
 
-    --sidebar-primary-foreground: 0 0% 98%;
-
-    --sidebar-accent: 240 4.8% 95.9%;
-
-    --sidebar-accent-foreground: 240 5.9% 10%;
-
-    --sidebar-border: 220 13% 91%;
-
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-background: 175 50% 8%;
+    --sidebar-foreground: 40 30% 95%;
+    --sidebar-primary: 355 70% 45%;
+    --sidebar-primary-foreground: 40 30% 98%;
+    --sidebar-accent: 170 60% 25%;
+    --sidebar-accent-foreground: 40 30% 95%;
+    --sidebar-border: 175 30% 25%;
+    --sidebar-ring: 355 70% 45%;
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
+    --background: 175 50% 8%;
+    --foreground: 40 30% 95%;
 
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
+    --card: 40 30% 95%;
+    --card-foreground: 175 50% 12%;
 
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 40 30% 95%;
+    --popover-foreground: 175 50% 12%;
 
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
+    --primary: 355 70% 45%;
+    --primary-foreground: 40 30% 98%;
 
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 40 30% 92%;
+    --secondary-foreground: 175 50% 12%;
 
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
+    --muted: 175 30% 20%;
+    --muted-foreground: 175 20% 70%;
 
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
+    --accent: 170 60% 25%;
+    --accent-foreground: 40 30% 95%;
 
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --border: 175 30% 25%;
+    --input: 175 30% 25%;
+    --ring: 355 70% 45%;
   }
 }
 
@@ -99,7 +104,142 @@ All colors MUST be HSL.
     @apply border-border;
   }
 
+  html {
+    scroll-behavior: smooth;
+  }
+
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-outfit antialiased;
+  }
+}
+
+@layer components {
+  /* Bento Card Base */
+  .bento-card {
+    @apply relative overflow-hidden rounded-2xl bg-bento-cream p-6 transition-all duration-500;
+    box-shadow: var(--shadow-md);
+  }
+
+  .bento-card:hover {
+    transform: translateY(-4px) scale(1.01);
+    box-shadow: var(--shadow-lg);
+  }
+
+  /* Glassmorphism Card */
+  .glass-card {
+    @apply relative overflow-hidden rounded-2xl p-6 border border-bento-cream/20;
+    background: hsl(var(--bento-cream) / 0.1);
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+  }
+
+  /* Accent Cards */
+  .bento-card-red {
+    @apply bento-card bg-primary text-primary-foreground;
+  }
+
+  .bento-card-teal {
+    @apply relative overflow-hidden rounded-2xl p-6 transition-all duration-500;
+    background: hsl(var(--bento-teal));
+    color: hsl(var(--bento-cream));
+    box-shadow: var(--shadow-md);
+  }
+
+  .bento-card-teal:hover {
+    transform: translateY(-4px) scale(1.01);
+    box-shadow: var(--shadow-lg);
+  }
+
+  /* Image overlay gradient */
+  .image-overlay {
+    @apply absolute inset-0 bg-gradient-to-t from-background/90 via-background/20 to-transparent;
+  }
+
+  /* Floating WhatsApp Button */
+  .whatsapp-float {
+    @apply fixed bottom-6 right-6 z-50 flex h-16 w-16 items-center justify-center rounded-full bg-[#25D366] text-white shadow-lg transition-all duration-300 hover:scale-110;
+    box-shadow: 0 8px 24px -4px rgba(37, 211, 102, 0.5);
+  }
+
+  .whatsapp-float:hover {
+    box-shadow: 0 12px 32px -4px rgba(37, 211, 102, 0.6);
+  }
+
+  /* Animate on scroll */
+  .animate-fade-up {
+    animation: fadeUp 0.6s ease-out forwards;
+    opacity: 0;
+  }
+
+  @keyframes fadeUp {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Staggered animation delays */
+  .delay-100 { animation-delay: 100ms; }
+  .delay-200 { animation-delay: 200ms; }
+  .delay-300 { animation-delay: 300ms; }
+  .delay-400 { animation-delay: 400ms; }
+  .delay-500 { animation-delay: 500ms; }
+  .delay-600 { animation-delay: 600ms; }
+
+  /* Hero text animation */
+  .hero-text {
+    @apply text-4xl font-bold tracking-tight md:text-5xl lg:text-6xl;
+    background: linear-gradient(135deg, hsl(var(--bento-cream)) 0%, hsl(var(--bento-cream) / 0.8) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Japan-inspired pattern overlay */
+  .pattern-overlay {
+    background-image: radial-gradient(circle at 1px 1px, hsl(var(--bento-cream) / 0.05) 1px, transparent 0);
+    background-size: 40px 40px;
+  }
+
+  /* Shimmer effect */
+  .shimmer {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .shimmer::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: -100%;
+    bottom: 0;
+    left: -100%;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      hsl(var(--bento-cream) / 0.1) 50%,
+      transparent 100%
+    );
+    animation: shimmer 3s infinite;
+  }
+
+  @keyframes shimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+  }
+
+  /* Scroll indicator */
+  .scroll-indicator {
+    @apply animate-bounce;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
   }
 }
