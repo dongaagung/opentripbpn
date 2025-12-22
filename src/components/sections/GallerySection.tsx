@@ -1,6 +1,5 @@
-import { useState, useEffect } from "react";
-import { Play, X, MapPin, ImageIcon } from "lucide-react";
-import { BentoCard } from "@/components/ui/BentoCard";
+import { useState, useEffect, useCallback } from "react";
+import { Play, X, MapPin, ImageIcon, Sparkles } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 interface GalleryItem {
@@ -11,6 +10,8 @@ interface GalleryItem {
   caption: string;
   location: string;
   category: string;
+  aiCaption?: string;
+  overlayColor?: string;
 }
 
 const GallerySection = () => {
@@ -19,10 +20,48 @@ const GallerySection = () => {
   const [activeCategory, setActiveCategory] = useState("Semua");
   const [selectedItem, setSelectedItem] = useState<GalleryItem | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [analyzingIds, setAnalyzingIds] = useState<Set<string>>(new Set());
+
+  const analyzeImage = useCallback(async (item: GalleryItem) => {
+    if (item.type === "video" || item.aiCaption) return;
+    
+    setAnalyzingIds(prev => new Set(prev).add(item.id));
+    
+    try {
+      const { data, error } = await supabase.functions.invoke('analyze-image', {
+        body: { imageUrl: item.src }
+      });
+
+      if (!error && data) {
+        setGalleryItems(prev => prev.map(i => 
+          i.id === item.id 
+            ? { ...i, aiCaption: data.caption, overlayColor: data.overlayColor }
+            : i
+        ));
+      }
+    } catch (error) {
+      console.error('Error analyzing image:', error);
+    } finally {
+      setAnalyzingIds(prev => {
+        const next = new Set(prev);
+        next.delete(item.id);
+        return next;
+      });
+    }
+  }, []);
 
   useEffect(() => {
     fetchGalleryItems();
   }, []);
+
+  // Analyze images when they load
+  useEffect(() => {
+    galleryItems.forEach(item => {
+      if (!item.aiCaption && item.type === "image" && !analyzingIds.has(item.id)) {
+        analyzeImage(item);
+      }
+    });
+  }, [galleryItems, analyzeImage, analyzingIds]);
 
   const fetchGalleryItems = async () => {
     try {
@@ -47,7 +86,6 @@ const GallerySection = () => {
 
         setGalleryItems(items);
 
-        // Extract unique categories
         const uniqueCategories = [
           "Semua",
           ...new Set(items.map((item) => item.category)),
@@ -66,9 +104,34 @@ const GallerySection = () => {
       ? galleryItems
       : galleryItems.filter((item) => item.category === activeCategory);
 
+  // Predefined color palette for variety
+  const defaultColors = [
+    '#FF6B35', '#4A90A4', '#8B5CF6', '#22C55E', '#F59E0B', 
+    '#EC4899', '#06B6D4', '#EF4444', '#10B981', '#6366F1'
+  ];
+
+  const getOverlayColor = (item: GalleryItem, index: number) => {
+    return item.overlayColor || defaultColors[index % defaultColors.length];
+  };
+
+  // Determine grid span based on index for bento layout
+  const getGridClass = (index: number) => {
+    const patterns = [
+      "col-span-2 row-span-2", // Large featured
+      "col-span-1 row-span-1", // Small
+      "col-span-1 row-span-1", // Small
+      "col-span-1 row-span-2", // Tall
+      "col-span-1 row-span-1", // Small
+      "col-span-2 row-span-1", // Wide
+      "col-span-1 row-span-1", // Small
+      "col-span-1 row-span-1", // Small
+    ];
+    return patterns[index % patterns.length];
+  };
+
   if (isLoading) {
     return (
-      <section id="gallery" className="py-20 relative">
+      <section id="gallery" className="py-20 bg-background">
         <div className="container mx-auto px-4">
           <div className="text-center">
             <div className="animate-pulse">
@@ -83,7 +146,7 @@ const GallerySection = () => {
 
   if (galleryItems.length === 0) {
     return (
-      <section id="gallery" className="py-20 relative">
+      <section id="gallery" className="py-20 bg-background">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
             <span className="text-primary font-medium text-sm uppercase tracking-wider">
@@ -106,20 +169,20 @@ const GallerySection = () => {
   }
 
   return (
-    <section id="gallery" className="py-20 relative">
-      <div className="absolute inset-0 pattern-overlay opacity-30" />
-
-      <div className="container mx-auto px-4 relative z-10">
+    <section id="gallery" className="py-20 bg-card/50">
+      <div className="container mx-auto px-4">
         {/* Section Header */}
         <div className="text-center mb-12">
-          <span className="text-primary font-medium text-sm uppercase tracking-wider">
-            Galeri
+          <span className="text-primary font-medium text-sm uppercase tracking-wider flex items-center justify-center gap-2">
+            <Sparkles className="w-4 h-4" />
+            Galeri AI
+            <Sparkles className="w-4 h-4" />
           </span>
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mt-3 mb-4">
             Momen Berharga
           </h2>
           <p className="text-muted-foreground max-w-2xl mx-auto">
-            Koleksi foto dan video dari trip-trip sebelumnya bersama peserta kami
+            Koleksi foto dari trip-trip sebelumnya dengan caption cerdas dari AI
           </p>
         </div>
 
@@ -129,10 +192,10 @@ const GallerySection = () => {
             <button
               key={category}
               onClick={() => setActiveCategory(category)}
-              className={`px-5 py-2.5 rounded-full text-sm font-medium transition-all duration-300 ${
+              className={`px-5 py-2.5 rounded-xl text-sm font-medium transition-all duration-300 ${
                 activeCategory === category
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-bento-cream/10 text-foreground hover:bg-bento-cream/20"
+                  ? "bg-primary text-primary-foreground shadow-lg"
+                  : "bg-card text-foreground hover:bg-accent border border-border"
               }`}
             >
               {category}
@@ -140,50 +203,82 @@ const GallerySection = () => {
           ))}
         </div>
 
-        {/* Gallery Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {filteredItems.map((item, index) => (
-            <BentoCard
-              key={item.id}
-              variant="default"
-              className={`relative overflow-hidden cursor-pointer group ${
-                index === 0 ? "md:col-span-2 md:row-span-2" : ""
-              }`}
-              style={{
-                animationDelay: `${index * 100}ms`,
-              }}
-              onClick={() => setSelectedItem(item)}
-            >
-              <div className="absolute inset-0">
-                <img
-                  src={item.thumbnail}
-                  alt={item.caption}
-                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-card-foreground/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-              </div>
+        {/* Bento Grid Gallery */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 auto-rows-[180px] md:auto-rows-[200px]">
+          {filteredItems.map((item, index) => {
+            const overlayColor = getOverlayColor(item, index);
+            const isAnalyzing = analyzingIds.has(item.id);
+            
+            return (
+              <div
+                key={item.id}
+                className={`relative overflow-hidden rounded-2xl cursor-pointer group ${getGridClass(index)}`}
+                onClick={() => setSelectedItem(item)}
+              >
+                {/* Image */}
+                <div className="absolute inset-0">
+                  <img
+                    src={item.thumbnail}
+                    alt={item.caption}
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                  />
+                </div>
 
-              {/* Overlay Content */}
-              <div className="absolute inset-0 flex flex-col justify-end p-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300 min-h-[200px]">
-                {item.location && (
-                  <div className="flex items-center gap-2 text-bento-cream/80 mb-1">
-                    <MapPin className="w-3 h-3" />
-                    <span className="text-xs">{item.location}</span>
+                {/* Color Overlay - Always visible at bottom */}
+                <div 
+                  className="absolute inset-x-0 bottom-0 h-1/2 transition-all duration-500"
+                  style={{
+                    background: `linear-gradient(to top, ${overlayColor}ee 0%, ${overlayColor}99 40%, transparent 100%)`
+                  }}
+                />
+
+                {/* Hover overlay for full image */}
+                <div 
+                  className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+                  style={{
+                    background: `linear-gradient(to top, ${overlayColor}dd 0%, ${overlayColor}66 50%, transparent 100%)`
+                  }}
+                />
+
+                {/* Caption - Always visible */}
+                <div className="absolute inset-x-0 bottom-0 p-4 flex flex-col justify-end">
+                  {/* AI Caption with sparkle */}
+                  <div className="flex items-start gap-2">
+                    {isAnalyzing ? (
+                      <div className="flex items-center gap-2">
+                        <div className="w-3 h-3 border-2 border-white/50 border-t-white rounded-full animate-spin" />
+                        <span className="text-white/70 text-sm">Menganalisis...</span>
+                      </div>
+                    ) : (
+                      <>
+                        <Sparkles className="w-4 h-4 text-white/80 mt-0.5 flex-shrink-0" />
+                        <p className="text-white font-semibold text-sm md:text-base leading-tight drop-shadow-lg">
+                          {item.aiCaption || item.caption}
+                        </p>
+                      </>
+                    )}
+                  </div>
+
+                  {/* Location - visible on hover */}
+                  {item.location && (
+                    <div className="flex items-center gap-1.5 text-white/80 mt-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                      <MapPin className="w-3 h-3" />
+                      <span className="text-xs">{item.location}</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Video Play Button */}
+                {item.type === "video" && (
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="w-14 h-14 rounded-full bg-white/90 flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-xl">
+                      <Play className="w-5 h-5 text-foreground ml-1" />
+                    </div>
                   </div>
                 )}
-                <p className="text-bento-cream font-medium text-sm">{item.caption}</p>
               </div>
-
-              {/* Video Play Button */}
-              {item.type === "video" && (
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="w-16 h-16 rounded-full bg-bento-cream/90 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                    <Play className="w-6 h-6 text-card-foreground ml-1" />
-                  </div>
-                </div>
-              )}
-            </BentoCard>
-          ))}
+            );
+          })}
         </div>
       </div>
 
@@ -195,7 +290,7 @@ const GallerySection = () => {
         >
           <button
             onClick={() => setSelectedItem(null)}
-            className="absolute top-6 right-6 w-12 h-12 rounded-full bg-bento-cream/10 flex items-center justify-center text-foreground hover:bg-bento-cream/20 transition-colors"
+            className="absolute top-6 right-6 w-12 h-12 rounded-full bg-card flex items-center justify-center text-foreground hover:bg-accent transition-colors border border-border"
           >
             <X className="w-6 h-6" />
           </button>
@@ -219,11 +314,14 @@ const GallerySection = () => {
               />
             )}
             <div className="mt-4 text-center">
-              <p className="text-foreground text-xl font-semibold">
-                {selectedItem.caption}
-              </p>
+              <div className="flex items-center justify-center gap-2 mb-2">
+                <Sparkles className="w-5 h-5 text-primary" />
+                <p className="text-foreground text-xl font-semibold">
+                  {selectedItem.aiCaption || selectedItem.caption}
+                </p>
+              </div>
               {selectedItem.location && (
-                <div className="flex items-center justify-center gap-2 text-muted-foreground mt-2">
+                <div className="flex items-center justify-center gap-2 text-muted-foreground">
                   <MapPin className="w-4 h-4" />
                   <span>{selectedItem.location}</span>
                 </div>
