@@ -29,6 +29,11 @@ const HeroSection = () => {
       {/* Background */}
       <div className="absolute inset-0 pattern-overlay" />
       
+      {/* Floating decorative elements */}
+      <div className="absolute top-32 left-10 w-20 h-20 rounded-full bg-primary/10 blur-2xl animate-pulse" />
+      <div className="absolute top-60 right-20 w-32 h-32 rounded-full bg-bento-teal/10 blur-3xl animate-[pulse_4s_ease-in-out_infinite]" />
+      <div className="absolute bottom-40 left-1/4 w-24 h-24 rounded-full bg-primary/5 blur-2xl animate-[pulse_3s_ease-in-out_infinite_0.5s]" />
+      
       <div className="container mx-auto px-4 relative z-10">
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6 mt-8">
           
@@ -39,6 +44,7 @@ const HeroSection = () => {
             className="relative overflow-hidden min-h-[400px] lg:min-h-[500px] animate-fade-up"
             hover={true}
             hoverEffect="zoom"
+            decorative="wave"
           >
             {heroImage && (
               <img 
@@ -52,16 +58,16 @@ const HeroSection = () => {
             <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8">
               <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-bento-cream mb-3 leading-tight">
                 Jelajahi<br />
-                <span className="text-primary">Keindahan Jepang</span>
+                <span className="text-primary animate-[pulse_2s_ease-in-out_infinite]">Keindahan Jepang</span>
               </h1>
               <p className="text-bento-cream/90 text-base md:text-lg mb-6 max-w-md">
                 Open trip eksklusif dengan pengalaman tak terlupakan bersama opentrip.bpn
               </p>
               <div className="flex flex-wrap gap-3">
-                <Button variant="bento" size="lg" onClick={scrollToPackages}>
+                <Button variant="bento" size="lg" onClick={scrollToPackages} className="hover:scale-105 transition-transform">
                   Lihat Paket Trip
                 </Button>
-                <Button variant="heroOutline" size="lg" onClick={openWhatsApp}>
+                <Button variant="heroOutline" size="lg" onClick={openWhatsApp} className="hover:scale-105 transition-transform">
                   Hubungi Kami
                 </Button>
               </div>
@@ -71,20 +77,22 @@ const HeroSection = () => {
           {/* Stats Card - Red Accent */}
           <BentoCard 
             variant="red" 
-            className="flex flex-col justify-between animate-fade-up delay-100"
-            hoverEffect="lift"
+            className="flex flex-col justify-between animate-fade-up"
+            hoverEffect="shimmer"
+            decorative="sakura"
+            style={{ animationDelay: '100ms' }}
           >
             <div>
               <span className="text-xs font-medium text-primary-foreground/70 uppercase tracking-wider">
                 Pengalaman
               </span>
               <div className="mt-4">
-                <span className="text-5xl md:text-6xl font-bold">50+</span>
+                <span className="text-5xl md:text-6xl font-bold bg-gradient-to-br from-primary-foreground to-primary-foreground/80 bg-clip-text">50+</span>
                 <p className="text-primary-foreground/90 mt-2">Trip telah dilaksanakan</p>
               </div>
             </div>
             <div className="mt-6 flex items-center gap-2 text-primary-foreground/80">
-              <Users className="w-5 h-5" />
+              <Users className="w-5 h-5 animate-[bounce_2s_ease-in-out_infinite]" />
               <span className="text-sm">500+ peserta puas</span>
             </div>
           </BentoCard>
@@ -92,22 +100,23 @@ const HeroSection = () => {
           {/* Tokyo Preview Card */}
           <BentoCard 
             variant="default" 
-            className="relative overflow-hidden min-h-[200px] animate-fade-up delay-200"
+            className="relative overflow-hidden min-h-[200px] animate-fade-up"
             hover={true}
             hoverEffect="tilt"
+            style={{ animationDelay: '200ms' }}
           >
             {tokyoImage && (
               <img 
                 src={tokyoImage} 
                 alt="Gallery preview" 
-                className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 hover:scale-110"
+                className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                 loading="eager"
               />
             )}
-            <div className="absolute inset-0 bg-gradient-to-t from-card-foreground/70 to-transparent" />
-            <div className="absolute bottom-0 left-0 right-0 p-4">
+            <div className="absolute inset-0 bg-gradient-to-t from-card-foreground/70 to-transparent group-hover:from-card-foreground/50 transition-all duration-300" />
+            <div className="absolute bottom-0 left-0 right-0 p-4 transform group-hover:translate-y-[-4px] transition-transform duration-300">
               <div className="flex items-center gap-2 text-bento-cream">
-                <MapPin className="w-4 h-4" />
+                <MapPin className="w-4 h-4 group-hover:animate-bounce" />
                 <span className="font-semibold">Tokyo</span>
               </div>
             </div>
@@ -116,11 +125,13 @@ const HeroSection = () => {
           {/* Brand Card - Teal */}
           <BentoCard 
             variant="teal" 
-            className="flex flex-col justify-center items-center text-center animate-fade-up delay-300"
+            className="flex flex-col justify-center items-center text-center animate-fade-up"
             hoverEffect="glow"
+            decorative="dots"
+            style={{ animationDelay: '300ms' }}
           >
-            <span className="text-4xl md:text-5xl font-bold mb-2">opentrip</span>
-            <span className="text-2xl md:text-3xl font-light">.bpn</span>
+            <span className="text-4xl md:text-5xl font-bold mb-2 bg-gradient-to-r from-bento-cream to-bento-cream/80 bg-clip-text">opentrip</span>
+            <span className="text-2xl md:text-3xl font-light animate-[pulse_3s_ease-in-out_infinite]">.bpn</span>
             <p className="text-bento-cream/70 mt-4 text-sm">Your Japan Travel Partner</p>
           </BentoCard>
 
@@ -128,22 +139,23 @@ const HeroSection = () => {
           <BentoCard 
             variant="default" 
             size="tall"
-            className="relative overflow-hidden min-h-[200px] animate-fade-up delay-400"
+            className="relative overflow-hidden min-h-[200px] animate-fade-up"
             hover={true}
             hoverEffect="float"
+            style={{ animationDelay: '400ms' }}
           >
             {kyotoImage && (
               <img 
                 src={kyotoImage} 
                 alt="Gallery preview" 
-                className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 hover:scale-110"
+                className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                 loading="eager"
               />
             )}
-            <div className="absolute inset-0 bg-gradient-to-t from-card-foreground/70 to-transparent" />
-            <div className="absolute bottom-0 left-0 right-0 p-4">
+            <div className="absolute inset-0 bg-gradient-to-t from-card-foreground/70 to-transparent group-hover:from-card-foreground/50 transition-all duration-300" />
+            <div className="absolute bottom-0 left-0 right-0 p-4 transform group-hover:translate-y-[-4px] transition-transform duration-300">
               <div className="flex items-center gap-2 text-bento-cream mb-2">
-                <MapPin className="w-4 h-4" />
+                <MapPin className="w-4 h-4 group-hover:animate-bounce" />
                 <span className="font-semibold">Kyoto</span>
               </div>
               <p className="text-bento-cream/80 text-sm">Temple & Tradisi</p>
@@ -153,18 +165,20 @@ const HeroSection = () => {
           {/* Schedule Card */}
           <BentoCard 
             variant="glass" 
-            className="flex flex-col justify-between animate-fade-up delay-500"
-            hoverEffect="pulse"
+            className="flex flex-col justify-between animate-fade-up"
+            hoverEffect="shimmer"
+            decorative="lines"
+            style={{ animationDelay: '500ms' }}
           >
             <div className="flex items-center gap-3 text-foreground/70 text-sm">
-              <Calendar className="w-4 h-4" />
+              <Calendar className="w-4 h-4 animate-[spin_8s_linear_infinite]" />
               <span>Next Trip</span>
             </div>
             <div className="mt-4">
-              <span className="text-3xl md:text-4xl font-bold text-foreground">MAR</span>
+              <span className="text-3xl md:text-4xl font-bold text-foreground bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text">MAR</span>
               <p className="text-lg text-foreground/90">2025</p>
             </div>
-            <div className="mt-4 py-2 px-3 rounded-xl bg-primary/20 text-primary text-sm font-medium inline-block">
+            <div className="mt-4 py-2 px-3 rounded-xl bg-primary/20 text-primary text-sm font-medium inline-block animate-[pulse_2s_ease-in-out_infinite]">
               Slot Terbatas
             </div>
           </BentoCard>
@@ -172,12 +186,14 @@ const HeroSection = () => {
           {/* CTA Card */}
           <BentoCard 
             variant="default" 
-            className="flex flex-col justify-center items-center text-center animate-fade-up delay-600"
+            className="flex flex-col justify-center items-center text-center animate-fade-up"
             hoverEffect="lift"
+            decorative="sakura"
+            style={{ animationDelay: '600ms' }}
           >
             <p className="text-card-foreground/80 text-sm mb-3">Siap untuk petualangan?</p>
             <p className="text-xl font-bold text-card-foreground mb-4">Mulai dari</p>
-            <div className="flex items-baseline gap-1">
+            <div className="flex items-baseline gap-1 group-hover:scale-110 transition-transform duration-300">
               <span className="text-3xl font-bold text-primary">IDR 18</span>
               <span className="text-lg text-primary">juta</span>
             </div>
