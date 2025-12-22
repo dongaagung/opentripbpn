@@ -4,7 +4,7 @@ import { BentoCard } from "@/components/ui/BentoCard";
 import { useGalleryImages } from "@/hooks/useGalleryImages";
 
 const HeroSection = () => {
-  const { getImage, isLoading } = useGalleryImages(5);
+  const { getImage } = useGalleryImages(5);
 
   const scrollToPackages = () => {
     const element = document.querySelector("#packages");
@@ -19,6 +19,10 @@ const HeroSection = () => {
       "_blank"
     );
   };
+
+  const heroImage = getImage(0);
+  const tokyoImage = getImage(1);
+  const kyotoImage = getImage(2);
 
   return (
     <section id="home" className="relative min-h-screen pt-20 pb-12 overflow-hidden">
@@ -36,11 +40,14 @@ const HeroSection = () => {
             hover={true}
             hoverEffect="zoom"
           >
-            <img 
-              src={getImage(0)} 
-              alt="Mount Fuji with cherry blossoms" 
-              className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-            />
+            {heroImage && (
+              <img 
+                src={heroImage} 
+                alt="Mount Fuji with cherry blossoms" 
+                className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                loading="eager"
+              />
+            )}
             <div className="absolute inset-0 bg-gradient-to-t from-card-foreground/80 via-card-foreground/20 to-transparent" />
             <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8">
               <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-bento-cream mb-3 leading-tight">
@@ -89,11 +96,14 @@ const HeroSection = () => {
             hover={true}
             hoverEffect="tilt"
           >
-            <img 
-              src={getImage(1)} 
-              alt="Gallery preview" 
-              className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 hover:scale-110"
-            />
+            {tokyoImage && (
+              <img 
+                src={tokyoImage} 
+                alt="Gallery preview" 
+                className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 hover:scale-110"
+                loading="eager"
+              />
+            )}
             <div className="absolute inset-0 bg-gradient-to-t from-card-foreground/70 to-transparent" />
             <div className="absolute bottom-0 left-0 right-0 p-4">
               <div className="flex items-center gap-2 text-bento-cream">
@@ -122,11 +132,14 @@ const HeroSection = () => {
             hover={true}
             hoverEffect="float"
           >
-            <img 
-              src={getImage(2)} 
-              alt="Gallery preview" 
-              className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 hover:scale-110"
-            />
+            {kyotoImage && (
+              <img 
+                src={kyotoImage} 
+                alt="Gallery preview" 
+                className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 hover:scale-110"
+                loading="eager"
+              />
+            )}
             <div className="absolute inset-0 bg-gradient-to-t from-card-foreground/70 to-transparent" />
             <div className="absolute bottom-0 left-0 right-0 p-4">
               <div className="flex items-center gap-2 text-bento-cream mb-2">
