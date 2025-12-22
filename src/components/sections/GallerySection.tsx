@@ -116,10 +116,16 @@ const GallerySection = () => {
       ? galleryItems
       : galleryItems.filter((item) => item.category === activeCategory);
 
-  // Predefined color palette for variety
+  // Predefined color palette matching theme - Japan inspired colors
   const defaultColors = [
-    '#FF6B35', '#4A90A4', '#8B5CF6', '#22C55E', '#F59E0B', 
-    '#EC4899', '#06B6D4', '#EF4444', '#10B981', '#6366F1'
+    '#DC5240', // warm red (primary-like)
+    '#2D7D90', // ocean teal
+    '#E07B39', // sunset orange
+    '#3D8B6E', // forest green
+    '#B8860B', // golden
+    '#4A6D7C', // slate blue
+    '#C75B7A', // sakura pink
+    '#5E4B8A', // dusk purple
   ];
 
   const getOverlayColor = (item: GalleryItem, index: number) => {
