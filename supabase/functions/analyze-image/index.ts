@@ -40,7 +40,16 @@ serve(async (req) => {
                 text: `Analyze this travel/destination image and respond with JSON only (no markdown):
 {
   "caption": "A short, poetic 3-5 word caption in Indonesian that captures the essence of this place",
-  "overlayColor": "A single hex color code that complements the image mood (warm colors like #FF6B35 for vibrant scenes, cool colors like #4A90A4 for serene scenes, purple tones like #8B5CF6 for mystical, green tones like #22C55E for nature)"
+  "overlayColor": "Pick ONE color from this Japan-inspired palette that best matches the image mood:
+    - #DC5240 (warm red - for vibrant temples, autumn, festivals)
+    - #2D7D90 (ocean teal - for water, sky, serene coastal views)
+    - #E07B39 (sunset orange - for sunset, warm lighting, traditional areas)
+    - #3D8B6E (forest green - for nature, gardens, bamboo)
+    - #B8860B (golden - for temples, shrines, traditional architecture)
+    - #5E4B8A (dusk purple - for night scenes, cherry blossoms twilight)
+    - #C75B7A (sakura pink - for cherry blossoms, spring)
+    - #4A6D7C (slate blue - for mountains, modern city, rain)
+    Return ONLY the hex code."
 }
 Only respond with the JSON, no other text.`
               },
@@ -74,10 +83,12 @@ Only respond with the JSON, no other text.`
       result = JSON.parse(cleanContent);
     } catch {
       console.log('Failed to parse AI response, using fallback');
-      // Fallback if parsing fails
+      // Fallback with varied colors based on random selection
+      const fallbackColors = ['#DC5240', '#2D7D90', '#E07B39', '#3D8B6E', '#B8860B', '#4A6D7C'];
+      const randomColor = fallbackColors[Math.floor(Math.random() * fallbackColors.length)];
       result = {
         caption: 'Keindahan Tersembunyi',
-        overlayColor: '#4A90A4'
+        overlayColor: randomColor
       };
     }
 
@@ -87,11 +98,13 @@ Only respond with the JSON, no other text.`
   } catch (error) {
     console.error('Error analyzing image:', error);
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    // Return fallback instead of error to prevent UI issues
+    // Return fallback with varied colors instead of error to prevent UI issues
+    const fallbackColors = ['#DC5240', '#2D7D90', '#E07B39', '#3D8B6E', '#B8860B', '#C75B7A'];
+    const randomColor = fallbackColors[Math.floor(Math.random() * fallbackColors.length)];
     return new Response(
       JSON.stringify({ 
         caption: 'Momen Indah',
-        overlayColor: '#8B5CF6'
+        overlayColor: randomColor
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
     );
