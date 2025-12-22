@@ -7,13 +7,21 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Pencil, Trash2, Loader2, X, Upload } from 'lucide-react';
+import { Plus, Pencil, Trash2, Loader2, Upload, Calendar, MapPin } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Json } from '@/integrations/supabase/types';
+
+interface ItineraryItem {
+  day: number;
+  title: string;
+  activities: string[];
+}
 
 interface TripPackage {
   id: string;
@@ -27,7 +35,27 @@ interface TripPackage {
   available_seats: number;
   start_date: string | null;
   is_active: boolean;
+  itinerary: ItineraryItem[];
+  target_participants: string | null;
+  inclusions: string[];
+  exclusions: string[];
+  meeting_point: string | null;
+  departure_time: string | null;
 }
+
+const parseItinerary = (data: Json | null): ItineraryItem[] => {
+  if (!data) return [];
+  if (Array.isArray(data)) {
+    return data.map((item) => ({
+      day: typeof item === 'object' && item !== null && 'day' in item ? Number(item.day) : 0,
+      title: typeof item === 'object' && item !== null && 'title' in item ? String(item.title) : '',
+      activities: typeof item === 'object' && item !== null && 'activities' in item && Array.isArray(item.activities)
+        ? item.activities.map(String)
+        : [],
+    }));
+  }
+  return [];
+};
 
 export default function PackagesAdmin() {
   const [packages, setPackages] = useState<TripPackage[]>([]);
@@ -49,6 +77,12 @@ export default function PackagesAdmin() {
     available_seats: 20,
     start_date: '',
     is_active: true,
+    itinerary: '',
+    target_participants: '',
+    inclusions: '',
+    exclusions: '',
+    meeting_point: '',
+    departure_time: '',
   });
 
   const fetchPackages = async () => {
@@ -59,7 +93,15 @@ export default function PackagesAdmin() {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setPackages(data || []);
+      
+      const parsed: TripPackage[] = (data || []).map((pkg) => ({
+        ...pkg,
+        itinerary: parseItinerary(pkg.itinerary),
+        highlights: pkg.highlights || [],
+        inclusions: pkg.inclusions || [],
+        exclusions: pkg.exclusions || [],
+      }));
+      setPackages(parsed);
     } catch (error) {
       console.error('Error fetching packages:', error);
       toast({
@@ -88,8 +130,36 @@ export default function PackagesAdmin() {
       available_seats: 20,
       start_date: '',
       is_active: true,
+      itinerary: '',
+      target_participants: '',
+      inclusions: '',
+      exclusions: '',
+      meeting_point: '',
+      departure_time: '',
     });
     setEditingPackage(null);
+  };
+
+  const itineraryToString = (itinerary: ItineraryItem[]): string => {
+    return itinerary.map(item => {
+      const activities = item.activities.join('; ');
+      return `Hari ${item.day}: ${item.title}\n${activities}`;
+    }).join('\n\n');
+  };
+
+  const stringToItinerary = (str: string): ItineraryItem[] => {
+    if (!str.trim()) return [];
+    const days = str.split(/\n\n+/).filter(d => d.trim());
+    return days.map((dayBlock, idx) => {
+      const lines = dayBlock.split('\n').filter(l => l.trim());
+      const headerMatch = lines[0]?.match(/^Hari\s*(\d+)\s*:\s*(.+)$/i);
+      const day = headerMatch ? parseInt(headerMatch[1]) : idx + 1;
+      const title = headerMatch ? headerMatch[2].trim() : lines[0] || '';
+      const activities = headerMatch 
+        ? lines.slice(1).flatMap(l => l.split(';').map(a => a.trim()).filter(Boolean))
+        : lines.slice(1).flatMap(l => l.split(';').map(a => a.trim()).filter(Boolean));
+      return { day, title, activities };
+    });
   };
 
   const openDialog = (pkg?: TripPackage) => {
@@ -106,6 +176,12 @@ export default function PackagesAdmin() {
         available_seats: pkg.available_seats,
         start_date: pkg.start_date || '',
         is_active: pkg.is_active,
+        itinerary: itineraryToString(pkg.itinerary),
+        target_participants: pkg.target_participants || '',
+        inclusions: pkg.inclusions?.join('\n') || '',
+        exclusions: pkg.exclusions?.join('\n') || '',
+        meeting_point: pkg.meeting_point || '',
+        departure_time: pkg.departure_time || '',
       });
     } else {
       resetForm();
@@ -154,6 +230,13 @@ export default function PackagesAdmin() {
     setIsSubmitting(true);
 
     try {
+      // Convert itinerary to plain JSON-compatible objects
+      const itineraryData = stringToItinerary(formData.itinerary).map(item => ({
+        day: item.day,
+        title: item.title,
+        activities: item.activities,
+      }));
+
       const packageData = {
         title: formData.title,
         destination: formData.destination,
@@ -165,6 +248,12 @@ export default function PackagesAdmin() {
         available_seats: formData.available_seats,
         start_date: formData.start_date || null,
         is_active: formData.is_active,
+        itinerary: itineraryData as unknown as Json,
+        target_participants: formData.target_participants || null,
+        inclusions: formData.inclusions.split('\n').filter(h => h.trim()),
+        exclusions: formData.exclusions.split('\n').filter(h => h.trim()),
+        meeting_point: formData.meeting_point || null,
+        departure_time: formData.departure_time || null,
       };
 
       if (editingPackage) {
@@ -178,7 +267,7 @@ export default function PackagesAdmin() {
       } else {
         const { error } = await supabase
           .from('trip_packages')
-          .insert(packageData);
+          .insert([packageData]);
 
         if (error) throw error;
         toast({ title: 'Berhasil', description: 'Paket berhasil ditambahkan' });
@@ -270,7 +359,10 @@ export default function PackagesAdmin() {
                   <div className="flex items-start justify-between mb-2">
                     <div>
                       <h3 className="font-semibold text-foreground">{pkg.title}</h3>
-                      <p className="text-sm text-muted-foreground">{pkg.destination}</p>
+                      <p className="text-sm text-muted-foreground flex items-center gap-1">
+                        <MapPin size={12} />
+                        {pkg.destination}
+                      </p>
                     </div>
                     <span
                       className={`px-2 py-1 text-xs rounded-full ${
@@ -285,9 +377,20 @@ export default function PackagesAdmin() {
                   <p className="text-lg font-bold text-primary mb-2">
                     {formatPrice(pkg.price)}
                   </p>
-                  <p className="text-sm text-muted-foreground mb-4">
+                  <p className="text-sm text-muted-foreground mb-2">
                     {pkg.duration_days} Hari • {pkg.available_seats} Seat
                   </p>
+                  {pkg.start_date && (
+                    <p className="text-xs text-muted-foreground mb-3 flex items-center gap-1">
+                      <Calendar size={12} />
+                      {new Date(pkg.start_date).toLocaleDateString('id-ID')}
+                    </p>
+                  )}
+                  {pkg.itinerary.length > 0 && (
+                    <p className="text-xs text-primary mb-3">
+                      {pkg.itinerary.length} hari itinerary
+                    </p>
+                  )}
                   <div className="flex gap-2">
                     <Button
                       variant="outline"
@@ -315,148 +418,231 @@ export default function PackagesAdmin() {
       </div>
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
               {editingPackage ? 'Edit Paket Trip' : 'Tambah Paket Trip'}
             </DialogTitle>
           </DialogHeader>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="title">Nama Paket</Label>
-                <Input
-                  id="title"
-                  value={formData.title}
-                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  placeholder="Tokyo Explorer"
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="destination">Destinasi</Label>
-                <Input
-                  id="destination"
-                  value={formData.destination}
-                  onChange={(e) => setFormData({ ...formData, destination: e.target.value })}
-                  placeholder="Tokyo, Japan"
-                  required
-                />
-              </div>
-            </div>
+          <form onSubmit={handleSubmit}>
+            <Tabs defaultValue="basic" className="w-full">
+              <TabsList className="grid w-full grid-cols-3 mb-4">
+                <TabsTrigger value="basic">Info Dasar</TabsTrigger>
+                <TabsTrigger value="itinerary">Itinerary</TabsTrigger>
+                <TabsTrigger value="details">Detail Lainnya</TabsTrigger>
+              </TabsList>
 
-            <div className="grid grid-cols-3 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="duration">Durasi (Hari)</Label>
-                <Input
-                  id="duration"
-                  type="number"
-                  value={formData.duration_days}
-                  onChange={(e) => setFormData({ ...formData, duration_days: parseInt(e.target.value) })}
-                  min={1}
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="price">Harga (IDR)</Label>
-                <Input
-                  id="price"
-                  type="number"
-                  value={formData.price}
-                  onChange={(e) => setFormData({ ...formData, price: parseInt(e.target.value) })}
-                  min={0}
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="seats">Seat Tersedia</Label>
-                <Input
-                  id="seats"
-                  type="number"
-                  value={formData.available_seats}
-                  onChange={(e) => setFormData({ ...formData, available_seats: parseInt(e.target.value) })}
-                  min={0}
-                />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="start_date">Tanggal Keberangkatan</Label>
-              <Input
-                id="start_date"
-                type="date"
-                value={formData.start_date}
-                onChange={(e) => setFormData({ ...formData, start_date: e.target.value })}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="description">Deskripsi</Label>
-              <Textarea
-                id="description"
-                value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                placeholder="Deskripsi paket trip..."
-                rows={3}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="highlights">Highlight (satu per baris)</Label>
-              <Textarea
-                id="highlights"
-                value={formData.highlights}
-                onChange={(e) => setFormData({ ...formData, highlights: e.target.value })}
-                placeholder="Kunjungan ke Tokyo Skytree&#10;Wisata kuliner di Tsukiji Market&#10;..."
-                rows={4}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label>Cover Image</Label>
-              <div className="flex items-center gap-4">
-                {formData.cover_image_url && (
-                  <img
-                    src={formData.cover_image_url}
-                    alt="Cover"
-                    className="w-20 h-20 object-cover rounded-lg"
-                  />
-                )}
-                <div className="flex-1">
-                  <Input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageUpload}
-                    disabled={uploading}
-                    className="hidden"
-                    id="cover-upload"
-                  />
-                  <Label
-                    htmlFor="cover-upload"
-                    className="flex items-center justify-center gap-2 px-4 py-2 border border-dashed border-border rounded-lg cursor-pointer hover:border-primary transition-colors"
-                  >
-                    {uploading ? (
-                      <Loader2 size={18} className="animate-spin" />
-                    ) : (
-                      <Upload size={18} />
-                    )}
-                    {uploading ? 'Uploading...' : 'Upload Gambar'}
-                  </Label>
+              <TabsContent value="basic" className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="title">Nama Paket</Label>
+                    <Input
+                      id="title"
+                      value={formData.title}
+                      onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                      placeholder="Tokyo Explorer"
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="destination">Destinasi</Label>
+                    <Input
+                      id="destination"
+                      value={formData.destination}
+                      onChange={(e) => setFormData({ ...formData, destination: e.target.value })}
+                      placeholder="Tokyo, Japan"
+                      required
+                    />
+                  </div>
                 </div>
-              </div>
-            </div>
 
-            <div className="flex items-center gap-2">
-              <Switch
-                id="is_active"
-                checked={formData.is_active}
-                onCheckedChange={(checked) => setFormData({ ...formData, is_active: checked })}
-              />
-              <Label htmlFor="is_active">Aktifkan Paket</Label>
-            </div>
+                <div className="grid grid-cols-3 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="duration">Durasi (Hari)</Label>
+                    <Input
+                      id="duration"
+                      type="number"
+                      value={formData.duration_days}
+                      onChange={(e) => setFormData({ ...formData, duration_days: parseInt(e.target.value) })}
+                      min={1}
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="price">Harga (IDR)</Label>
+                    <Input
+                      id="price"
+                      type="number"
+                      value={formData.price}
+                      onChange={(e) => setFormData({ ...formData, price: parseInt(e.target.value) })}
+                      min={0}
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="seats">Seat Tersedia</Label>
+                    <Input
+                      id="seats"
+                      type="number"
+                      value={formData.available_seats}
+                      onChange={(e) => setFormData({ ...formData, available_seats: parseInt(e.target.value) })}
+                      min={0}
+                    />
+                  </div>
+                </div>
 
-            <div className="flex justify-end gap-2 pt-4">
+                <div className="space-y-2">
+                  <Label htmlFor="start_date">Tanggal Keberangkatan</Label>
+                  <Input
+                    id="start_date"
+                    type="date"
+                    value={formData.start_date}
+                    onChange={(e) => setFormData({ ...formData, start_date: e.target.value })}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="description">Deskripsi</Label>
+                  <Textarea
+                    id="description"
+                    value={formData.description}
+                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                    placeholder="Deskripsi paket trip..."
+                    rows={3}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="highlights">Highlight (satu per baris)</Label>
+                  <Textarea
+                    id="highlights"
+                    value={formData.highlights}
+                    onChange={(e) => setFormData({ ...formData, highlights: e.target.value })}
+                    placeholder="Kunjungan ke Tokyo Skytree&#10;Wisata kuliner di Tsukiji Market&#10;..."
+                    rows={4}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Cover Image</Label>
+                  <div className="flex items-center gap-4">
+                    {formData.cover_image_url && (
+                      <img
+                        src={formData.cover_image_url}
+                        alt="Cover"
+                        className="w-20 h-20 object-cover rounded-lg"
+                      />
+                    )}
+                    <div className="flex-1">
+                      <Input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageUpload}
+                        disabled={uploading}
+                        className="hidden"
+                        id="cover-upload"
+                      />
+                      <Label
+                        htmlFor="cover-upload"
+                        className="flex items-center justify-center gap-2 px-4 py-2 border border-dashed border-border rounded-lg cursor-pointer hover:border-primary transition-colors"
+                      >
+                        {uploading ? (
+                          <Loader2 size={18} className="animate-spin" />
+                        ) : (
+                          <Upload size={18} />
+                        )}
+                        {uploading ? 'Uploading...' : 'Upload Gambar'}
+                      </Label>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <Switch
+                    id="is_active"
+                    checked={formData.is_active}
+                    onCheckedChange={(checked) => setFormData({ ...formData, is_active: checked })}
+                  />
+                  <Label htmlFor="is_active">Aktifkan Paket</Label>
+                </div>
+              </TabsContent>
+
+              <TabsContent value="itinerary" className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="itinerary">Itinerary</Label>
+                  <p className="text-xs text-muted-foreground mb-2">
+                    Format: "Hari 1: Judul" diikuti aktivitas (pisahkan dengan titik koma atau baris baru).
+                    Pisahkan hari dengan baris kosong.
+                  </p>
+                  <Textarea
+                    id="itinerary"
+                    value={formData.itinerary}
+                    onChange={(e) => setFormData({ ...formData, itinerary: e.target.value })}
+                    placeholder={`Hari 1: Kedatangan di Tokyo\nPenjemputan di bandara Narita; Check-in hotel; Makan malam selamat datang\n\nHari 2: Eksplorasi Tokyo\nKunjungan ke Tokyo Skytree; Wisata kuliner di Asakusa; Belanja di Shibuya`}
+                    rows={12}
+                    className="font-mono text-sm"
+                  />
+                </div>
+              </TabsContent>
+
+              <TabsContent value="details" className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="target_participants">Target Peserta</Label>
+                  <Input
+                    id="target_participants"
+                    value={formData.target_participants}
+                    onChange={(e) => setFormData({ ...formData, target_participants: e.target.value })}
+                    placeholder="Cocok untuk keluarga, pasangan, solo traveler"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="meeting_point">Meeting Point</Label>
+                    <Input
+                      id="meeting_point"
+                      value={formData.meeting_point}
+                      onChange={(e) => setFormData({ ...formData, meeting_point: e.target.value })}
+                      placeholder="Bandara Sepinggan, Balikpapan"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="departure_time">Waktu Keberangkatan</Label>
+                    <Input
+                      id="departure_time"
+                      type="time"
+                      value={formData.departure_time}
+                      onChange={(e) => setFormData({ ...formData, departure_time: e.target.value })}
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="inclusions">Termasuk (satu per baris)</Label>
+                  <Textarea
+                    id="inclusions"
+                    value={formData.inclusions}
+                    onChange={(e) => setFormData({ ...formData, inclusions: e.target.value })}
+                    placeholder="Tiket pesawat PP&#10;Akomodasi hotel&#10;Transportasi selama tour&#10;Guide berbahasa Indonesia"
+                    rows={5}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="exclusions">Tidak Termasuk (satu per baris)</Label>
+                  <Textarea
+                    id="exclusions"
+                    value={formData.exclusions}
+                    onChange={(e) => setFormData({ ...formData, exclusions: e.target.value })}
+                    placeholder="Pengeluaran pribadi&#10;Tips untuk guide dan driver&#10;Asuransi perjalanan"
+                    rows={5}
+                  />
+                </div>
+              </TabsContent>
+            </Tabs>
+
+            <div className="flex justify-end gap-2 pt-6 border-t mt-6">
               <Button
                 type="button"
                 variant="outline"

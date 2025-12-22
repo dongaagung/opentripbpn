@@ -121,14 +121,20 @@ export type Database = {
           available_seats: number | null
           cover_image_url: string | null
           created_at: string
+          departure_time: string | null
           description: string | null
           destination: string
           duration_days: number
+          exclusions: string[] | null
           highlights: string[] | null
           id: string
+          inclusions: string[] | null
           is_active: boolean | null
+          itinerary: Json | null
+          meeting_point: string | null
           price: number
           start_date: string | null
+          target_participants: string | null
           title: string
           updated_at: string
         }
@@ -136,14 +142,20 @@ export type Database = {
           available_seats?: number | null
           cover_image_url?: string | null
           created_at?: string
+          departure_time?: string | null
           description?: string | null
           destination: string
           duration_days?: number
+          exclusions?: string[] | null
           highlights?: string[] | null
           id?: string
+          inclusions?: string[] | null
           is_active?: boolean | null
+          itinerary?: Json | null
+          meeting_point?: string | null
           price: number
           start_date?: string | null
+          target_participants?: string | null
           title: string
           updated_at?: string
         }
@@ -151,14 +163,20 @@ export type Database = {
           available_seats?: number | null
           cover_image_url?: string | null
           created_at?: string
+          departure_time?: string | null
           description?: string | null
           destination?: string
           duration_days?: number
+          exclusions?: string[] | null
           highlights?: string[] | null
           id?: string
+          inclusions?: string[] | null
           is_active?: boolean | null
+          itinerary?: Json | null
+          meeting_point?: string | null
           price?: number
           start_date?: string | null
+          target_participants?: string | null
           title?: string
           updated_at?: string
         }

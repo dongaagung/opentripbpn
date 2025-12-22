@@ -1,9 +1,17 @@
-import { MapPin, Clock, Star, ArrowRight, ImageIcon } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { MapPin, Clock, Star, ImageIcon, ArrowRight, Eye } from "lucide-react";
 import { BentoCard } from "@/components/ui/BentoCard";
+import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useGalleryImages } from "@/hooks/useGalleryImages";
+import { PackageDetailDialog } from "./PackageDetailDialog";
+import { Json } from "@/integrations/supabase/types";
+
+interface ItineraryItem {
+  day: number;
+  title: string;
+  activities: string[];
+}
 
 interface TripPackage {
   id: string;
@@ -14,17 +22,38 @@ interface TripPackage {
   cover_image_url: string | null;
   highlights: string[];
   is_active: boolean;
+  description: string | null;
+  itinerary: ItineraryItem[];
+  target_participants: string | null;
+  inclusions: string[];
+  exclusions: string[];
+  meeting_point: string | null;
+  departure_time: string | null;
+  start_date: string | null;
+  available_seats: number | null;
 }
 
-const PackageCard = ({ pkg, fallbackImage }: { pkg: TripPackage; fallbackImage: string }) => {
-  const bookNow = () => {
-    const message = `Halo opentrip.bpn, saya tertarik dengan paket ${pkg.title} - ${pkg.destination} (${pkg.duration_days} Hari). Mohon info lebih lanjut.`;
-    window.open(
-      `https://wa.me/6282350125334?text=${encodeURIComponent(message)}`,
-      "_blank"
-    );
-  };
+const parseItinerary = (data: Json | null): ItineraryItem[] => {
+  if (!data) return [];
+  if (Array.isArray(data)) {
+    return data.map((item) => ({
+      day: typeof item === 'object' && item !== null && 'day' in item ? Number(item.day) : 0,
+      title: typeof item === 'object' && item !== null && 'title' in item ? String(item.title) : '',
+      activities: typeof item === 'object' && item !== null && 'activities' in item && Array.isArray(item.activities)
+        ? item.activities.map(String)
+        : [],
+    }));
+  }
+  return [];
+};
 
+interface PackageCardProps {
+  pkg: TripPackage;
+  fallbackImage: string;
+  onViewDetails: () => void;
+}
+
+const PackageCard = ({ pkg, fallbackImage, onViewDetails }: PackageCardProps) => {
   const formatPrice = (price: number) => {
     if (price >= 1000000) {
       return `${(price / 1000000).toFixed(1)} Juta`;
@@ -37,8 +66,9 @@ const PackageCard = ({ pkg, fallbackImage }: { pkg: TripPackage; fallbackImage: 
   return (
     <BentoCard
       variant="default"
-      className="relative overflow-hidden group"
+      className="relative overflow-hidden group cursor-pointer"
       hover={true}
+      onClick={onViewDetails}
     >
       {/* Image */}
       <div className="absolute inset-0">
@@ -56,6 +86,14 @@ const PackageCard = ({ pkg, fallbackImage }: { pkg: TripPackage; fallbackImage: 
         <div className="absolute top-4 right-4 flex items-center gap-1 bg-bento-cream/90 backdrop-blur-sm px-3 py-1.5 rounded-full">
           <Star className="w-4 h-4 text-amber-500 fill-amber-500" />
           <span className="text-card-foreground font-semibold text-sm">4.9</span>
+        </div>
+
+        {/* View Details Overlay */}
+        <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+          <div className="flex items-center gap-2 text-bento-cream bg-primary/80 backdrop-blur-sm px-4 py-2 rounded-full">
+            <Eye className="w-5 h-5" />
+            <span className="font-medium">Lihat Detail</span>
+          </div>
         </div>
 
         {/* Info */}
@@ -97,8 +135,8 @@ const PackageCard = ({ pkg, fallbackImage }: { pkg: TripPackage; fallbackImage: 
                 IDR {formatPrice(pkg.price)}
               </p>
             </div>
-            <Button variant="hero" size="default" onClick={bookNow}>
-              Book Now
+            <Button variant="hero" size="default" onClick={(e) => { e.stopPropagation(); onViewDetails(); }}>
+              Detail
               <ArrowRight className="w-4 h-4" />
             </Button>
           </div>
@@ -111,6 +149,8 @@ const PackageCard = ({ pkg, fallbackImage }: { pkg: TripPackage; fallbackImage: 
 const PackagesSection = () => {
   const [packages, setPackages] = useState<TripPackage[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [selectedPackage, setSelectedPackage] = useState<TripPackage | null>(null);
+  const [dialogOpen, setDialogOpen] = useState(false);
   const { getImage } = useGalleryImages(10);
 
   useEffect(() => {
@@ -125,7 +165,14 @@ const PackagesSection = () => {
         if (error) throw error;
 
         if (data) {
-          setPackages(data);
+          const parsed: TripPackage[] = data.map((pkg) => ({
+            ...pkg,
+            itinerary: parseItinerary(pkg.itinerary),
+            highlights: pkg.highlights || [],
+            inclusions: pkg.inclusions || [],
+            exclusions: pkg.exclusions || [],
+          }));
+          setPackages(parsed);
         }
       } catch (error) {
         console.error("Error fetching packages:", error);
@@ -136,6 +183,11 @@ const PackagesSection = () => {
 
     fetchPackages();
   }, []);
+
+  const handleViewDetails = (pkg: TripPackage, index: number) => {
+    setSelectedPackage({ ...pkg, cover_image_url: pkg.cover_image_url || getImage(index) });
+    setDialogOpen(true);
+  };
 
   if (isLoading) {
     return (
@@ -197,7 +249,12 @@ const PackagesSection = () => {
         {/* Packages Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {packages.map((pkg, index) => (
-            <PackageCard key={pkg.id} pkg={pkg} fallbackImage={getImage(index)} />
+            <PackageCard 
+              key={pkg.id} 
+              pkg={pkg} 
+              fallbackImage={getImage(index)} 
+              onViewDetails={() => handleViewDetails(pkg, index)}
+            />
           ))}
         </div>
 
@@ -223,6 +280,14 @@ const PackagesSection = () => {
           </BentoCard>
         </div>
       </div>
+
+      {/* Package Detail Dialog */}
+      <PackageDetailDialog
+        pkg={selectedPackage}
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        fallbackImage={getImage(0)}
+      />
     </section>
   );
 };
