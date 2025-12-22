@@ -33,12 +33,13 @@ const HeroSection = () => {
             variant="default" 
             size="large" 
             className="relative overflow-hidden min-h-[400px] lg:min-h-[500px] animate-fade-up"
-            hover={false}
+            hover={true}
+            hoverEffect="zoom"
           >
             <img 
               src={getImage(0)} 
               alt="Mount Fuji with cherry blossoms" 
-              className="absolute inset-0 w-full h-full object-cover"
+              className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-card-foreground/80 via-card-foreground/20 to-transparent" />
             <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8">
@@ -64,6 +65,7 @@ const HeroSection = () => {
           <BentoCard 
             variant="red" 
             className="flex flex-col justify-between animate-fade-up delay-100"
+            hoverEffect="lift"
           >
             <div>
               <span className="text-xs font-medium text-primary-foreground/70 uppercase tracking-wider">
@@ -85,6 +87,7 @@ const HeroSection = () => {
             variant="default" 
             className="relative overflow-hidden min-h-[200px] animate-fade-up delay-200"
             hover={true}
+            hoverEffect="tilt"
           >
             <img 
               src={getImage(1)} 
@@ -104,6 +107,7 @@ const HeroSection = () => {
           <BentoCard 
             variant="teal" 
             className="flex flex-col justify-center items-center text-center animate-fade-up delay-300"
+            hoverEffect="glow"
           >
             <span className="text-4xl md:text-5xl font-bold mb-2">opentrip</span>
             <span className="text-2xl md:text-3xl font-light">.bpn</span>
@@ -116,6 +120,7 @@ const HeroSection = () => {
             size="tall"
             className="relative overflow-hidden min-h-[200px] animate-fade-up delay-400"
             hover={true}
+            hoverEffect="float"
           >
             <img 
               src={getImage(2)} 
@@ -136,6 +141,7 @@ const HeroSection = () => {
           <BentoCard 
             variant="glass" 
             className="flex flex-col justify-between animate-fade-up delay-500"
+            hoverEffect="pulse"
           >
             <div className="flex items-center gap-3 text-foreground/70 text-sm">
               <Calendar className="w-4 h-4" />
@@ -154,6 +160,7 @@ const HeroSection = () => {
           <BentoCard 
             variant="default" 
             className="flex flex-col justify-center items-center text-center animate-fade-up delay-600"
+            hoverEffect="lift"
           >
             <p className="text-card-foreground/80 text-sm mb-3">Siap untuk petualangan?</p>
             <p className="text-xl font-bold text-card-foreground mb-4">Mulai dari</p>
