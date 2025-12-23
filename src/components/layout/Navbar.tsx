@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Menu, X, Plane } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import ThemeToggle from "@/components/ui/ThemeToggle";
+import { openWhatsApp } from "@/lib/whatsapp";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -79,15 +80,7 @@ const Navbar = () => {
           {/* Theme Toggle & CTA Button */}
           <div className="hidden md:flex items-center gap-3">
             <ThemeToggle />
-            <Button
-              variant="hero"
-              onClick={() => {
-                window.open(
-                  "https://wa.me/6282350125334?text=Halo%20opentrip.bpn%2C%20saya%20tertarik%20dengan%20paket%20trip%20ke%20Jepang",
-                  "_blank"
-                );
-              }}
-            >
+            <Button variant="hero" onClick={() => openWhatsApp()}>
               Hubungi Kami
             </Button>
           </div>
@@ -128,12 +121,7 @@ const Navbar = () => {
             <Button
               variant="hero"
               className="w-full"
-              onClick={() => {
-                window.open(
-                  "https://wa.me/6282350125334?text=Halo%20opentrip.bpn%2C%20saya%20tertarik%20dengan%20paket%20trip%20ke%20Jepang",
-                  "_blank"
-                );
-              }}
+              onClick={() => openWhatsApp()}
             >
               Hubungi Kami
             </Button>

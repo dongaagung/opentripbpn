@@ -7,10 +7,10 @@ import PackagesSection from "@/components/sections/PackagesSection";
 import GallerySection from "@/components/sections/GallerySection";
 import TestimonialsSection from "@/components/sections/TestimonialsSection";
 import ContactSection from "@/components/sections/ContactSection";
-import { useGalleryImages } from "@/hooks/useGalleryImages";
+import { GalleryProvider, useGallery } from "@/contexts/GalleryContext";
 
-const Index = () => {
-  const { hasImages, isLoading } = useGalleryImages(5);
+const IndexContent = () => {
+  const { hasImages, isLoading } = useGallery();
 
   useEffect(() => {
     document.title = "opentrip.bpn - Open Trip Jepang | Explore Japan with Us";
@@ -81,6 +81,14 @@ const Index = () => {
       <Footer />
       <WhatsAppFloat />
     </div>
+  );
+};
+
+const Index = () => {
+  return (
+    <GalleryProvider count={10}>
+      <IndexContent />
+    </GalleryProvider>
   );
 };
 

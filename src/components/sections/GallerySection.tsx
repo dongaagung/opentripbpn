@@ -1,7 +1,8 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { createPortal } from "react-dom";
 import { Play, X, MapPin, ImageIcon, Sparkles } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+
 interface GalleryItem {
   id: string;
   type: "image" | "video";
@@ -15,7 +16,23 @@ interface GalleryItem {
 }
 
 // Different hover effects for variety
-const hoverEffects = ["hover:translate-y-[-8px] hover:scale-[1.02] hover:rotate-0", "hover:rotate-[-2deg] hover:scale-[1.03]", "hover:rotate-[2deg] hover:scale-[1.03]", "hover:scale-[1.05] hover:translate-y-0", "hover:translate-y-[-12px] hover:scale-[1.01]", "hover:scale-[1.04] hover:rotate-[-1deg]", "hover:translate-y-[-6px] hover:scale-[1.02] hover:rotate-[1deg]", "hover:scale-[1.03] hover:translate-x-[4px]"];
+const hoverEffects = [
+  "hover:translate-y-[-8px] hover:scale-[1.02] hover:rotate-0",
+  "hover:rotate-[-2deg] hover:scale-[1.03]",
+  "hover:rotate-[2deg] hover:scale-[1.03]",
+  "hover:scale-[1.05] hover:translate-y-0",
+  "hover:translate-y-[-12px] hover:scale-[1.01]",
+  "hover:scale-[1.04] hover:rotate-[-1deg]",
+  "hover:translate-y-[-6px] hover:scale-[1.02] hover:rotate-[1deg]",
+  "hover:scale-[1.03] hover:translate-x-[4px]"
+];
+
+// Predefined color palette matching theme - Japan inspired colors
+const defaultColors = [
+  '#DC5240', '#2D7D90', '#E07B39', '#3D8B6E',
+  '#B8860B', '#4A6D7C', '#C75B7A', '#5E4B8A'
+];
+
 const GallerySection = () => {
   const [galleryItems, setGalleryItems] = useState<GalleryItem[]>([]);
   const [categories, setCategories] = useState<string[]>(["Semua"]);
@@ -23,6 +40,8 @@ const GallerySection = () => {
   const [selectedItem, setSelectedItem] = useState<GalleryItem | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [analyzingIds, setAnalyzingIds] = useState<Set<string>>(new Set());
+  const analysisQueueRef = useRef<string[]>([]);
+  const isAnalyzingRef = useRef(false);
 
   // Hide navbar / floating elements while lightbox is open
   useEffect(() => {
@@ -33,56 +52,82 @@ const GallerySection = () => {
     return () => root.removeAttribute("data-gallery-lightbox");
   }, [selectedItem]);
 
-  const analyzeImage = useCallback(async (item: GalleryItem) => {
-    if (item.type === "video" || item.aiCaption) return;
-    setAnalyzingIds(prev => new Set(prev).add(item.id));
+  // Throttled AI analysis - process one at a time with delay
+  const processAnalysisQueue = useCallback(async () => {
+    if (isAnalyzingRef.current || analysisQueueRef.current.length === 0) return;
+    
+    isAnalyzingRef.current = true;
+    const itemId = analysisQueueRef.current.shift();
+    
+    if (!itemId) {
+      isAnalyzingRef.current = false;
+      return;
+    }
+
+    setAnalyzingIds(prev => new Set(prev).add(itemId));
+    
     try {
-      const {
-        data,
-        error
-      } = await supabase.functions.invoke('analyze-image', {
-        body: {
-          imageUrl: item.src
-        }
+      const item = galleryItems.find(i => i.id === itemId);
+      if (!item || item.type === "video" || item.aiCaption) {
+        isAnalyzingRef.current = false;
+        processAnalysisQueue();
+        return;
+      }
+
+      const { data, error } = await supabase.functions.invoke('analyze-image', {
+        body: { imageUrl: item.src }
       });
+      
       if (!error && data) {
-        setGalleryItems(prev => prev.map(i => i.id === item.id ? {
-          ...i,
-          aiCaption: data.caption,
-          overlayColor: data.overlayColor
-        } : i));
+        setGalleryItems(prev => prev.map(i => 
+          i.id === itemId ? { ...i, aiCaption: data.caption, overlayColor: data.overlayColor } : i
+        ));
       }
     } catch (error) {
       console.error('Error analyzing image:', error);
     } finally {
       setAnalyzingIds(prev => {
         const next = new Set(prev);
-        next.delete(item.id);
+        next.delete(itemId);
         return next;
       });
+      
+      // Wait 2 seconds before processing next item
+      setTimeout(() => {
+        isAnalyzingRef.current = false;
+        processAnalysisQueue();
+      }, 2000);
     }
-  }, []);
+  }, [galleryItems]);
+
+  // Queue images for analysis (only first 6 visible ones)
+  useEffect(() => {
+    const itemsToAnalyze = galleryItems
+      .filter(item => !item.aiCaption && item.type === "image")
+      .slice(0, 6) // Only analyze first 6 images
+      .map(item => item.id);
+    
+    // Add to queue without duplicates
+    const newItems = itemsToAnalyze.filter(id => !analysisQueueRef.current.includes(id));
+    analysisQueueRef.current.push(...newItems);
+    
+    processAnalysisQueue();
+  }, [galleryItems.length, processAnalysisQueue]);
+
   useEffect(() => {
     fetchGalleryItems();
   }, []);
 
-  // Analyze images when they load
-  useEffect(() => {
-    galleryItems.forEach(item => {
-      if (!item.aiCaption && item.type === "image" && !analyzingIds.has(item.id)) {
-        analyzeImage(item);
-      }
-    });
-  }, [galleryItems, analyzeImage, analyzingIds]);
   const fetchGalleryItems = async () => {
     try {
-      const {
-        data,
-        error
-      } = await supabase.from("gallery").select("*").eq("is_published", true).order("display_order", {
-        ascending: true
-      });
+      const { data, error } = await supabase
+        .from("gallery")
+        .select("*")
+        .eq("is_published", true)
+        .order("display_order", { ascending: true });
+      
       if (error) throw error;
+      
       if (data) {
         const items: GalleryItem[] = data.map(item => ({
           id: item.id,
@@ -103,56 +148,29 @@ const GallerySection = () => {
       setIsLoading(false);
     }
   };
-  const filteredItems = activeCategory === "Semua" ? galleryItems : galleryItems.filter(item => item.category === activeCategory);
 
-  // Predefined color palette matching theme - Japan inspired colors
-  const defaultColors = ['#DC5240',
-  // warm red (primary-like)
-  '#2D7D90',
-  // ocean teal
-  '#E07B39',
-  // sunset orange
-  '#3D8B6E',
-  // forest green
-  '#B8860B',
-  // golden
-  '#4A6D7C',
-  // slate blue
-  '#C75B7A',
-  // sakura pink
-  '#5E4B8A' // dusk purple
-  ];
+  const filteredItems = activeCategory === "Semua" 
+    ? galleryItems 
+    : galleryItems.filter(item => item.category === activeCategory);
+
   const getOverlayColor = (item: GalleryItem, index: number) => {
     return item.overlayColor || defaultColors[index % defaultColors.length];
   };
 
-  // Determine grid span based on index for bento layout
   const getGridClass = (index: number) => {
-    const patterns = ["col-span-2 row-span-2",
-    // Large featured
-    "col-span-1 row-span-1",
-    // Small
-    "col-span-1 row-span-1",
-    // Small
-    "col-span-1 row-span-2",
-    // Tall
-    "col-span-1 row-span-1",
-    // Small
-    "col-span-2 row-span-1",
-    // Wide
-    "col-span-1 row-span-1",
-    // Small
-    "col-span-1 row-span-1" // Small
+    const patterns = [
+      "col-span-2 row-span-2", "col-span-1 row-span-1", "col-span-1 row-span-1",
+      "col-span-1 row-span-2", "col-span-1 row-span-1", "col-span-2 row-span-1",
+      "col-span-1 row-span-1", "col-span-1 row-span-1"
     ];
     return patterns[index % patterns.length];
   };
 
-  // Get hover effect for variety
-  const getHoverEffect = (index: number) => {
-    return hoverEffects[index % hoverEffects.length];
-  };
+  const getHoverEffect = (index: number) => hoverEffects[index % hoverEffects.length];
+
   if (isLoading) {
-    return <section id="gallery" className="py-20 bg-background">
+    return (
+      <section id="gallery" className="py-20 bg-background">
         <div className="container mx-auto px-4">
           <div className="text-center">
             <div className="animate-pulse">
@@ -161,44 +179,38 @@ const GallerySection = () => {
             </div>
           </div>
         </div>
-      </section>;
+      </section>
+    );
   }
+
   if (galleryItems.length === 0) {
-    return <section id="gallery" className="py-20 bg-background">
+    return (
+      <section id="gallery" className="py-20 bg-background">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
-            <span className="text-primary font-medium text-sm uppercase tracking-wider">
-              Galeri
-            </span>
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mt-3 mb-4">
-              Momen Berharga
-            </h2>
-            <p className="text-muted-foreground max-w-2xl mx-auto">
-              Koleksi foto dan video dari trip-trip sebelumnya bersama peserta kami
-            </p>
+            <span className="text-primary font-medium text-sm uppercase tracking-wider">Galeri</span>
+            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mt-3 mb-4">Momen Berharga</h2>
+            <p className="text-muted-foreground max-w-2xl mx-auto">Koleksi foto dan video dari trip-trip sebelumnya bersama peserta kami</p>
           </div>
           <div className="flex flex-col items-center justify-center py-16 text-muted-foreground">
             <ImageIcon className="w-16 h-16 mb-4 opacity-50" />
             <p>Belum ada foto di galeri</p>
           </div>
         </div>
-      </section>;
+      </section>
+    );
   }
-  return <section id="gallery" className="py-20 bg-card/50 relative overflow-hidden">
+
+  return (
+    <section id="gallery" className="py-20 bg-card/50 relative overflow-hidden">
       {/* Japanese-style decorative elements */}
       <div className="absolute inset-0 pointer-events-none">
-        {/* Grid pattern overlay */}
         <div className="absolute inset-0 opacity-[0.03]" style={{
-        backgroundImage: `
-            linear-gradient(to right, hsl(var(--foreground)) 1px, transparent 1px),
-            linear-gradient(to bottom, hsl(var(--foreground)) 1px, transparent 1px)
-          `,
-        backgroundSize: '60px 60px'
-      }} />
-        {/* Circular accent */}
+          backgroundImage: `linear-gradient(to right, hsl(var(--foreground)) 1px, transparent 1px), linear-gradient(to bottom, hsl(var(--foreground)) 1px, transparent 1px)`,
+          backgroundSize: '60px 60px'
+        }} />
         <div className="absolute -top-32 -right-32 w-64 h-64 rounded-full border border-primary/10" />
         <div className="absolute -bottom-24 -left-24 w-48 h-48 rounded-full border border-primary/5" />
-        {/* Japanese wave pattern hint */}
         <div className="absolute top-20 left-10 w-20 h-20 border-t-2 border-l-2 border-primary/10 rounded-tl-full" />
         <div className="absolute bottom-20 right-10 w-16 h-16 border-b-2 border-r-2 border-primary/10 rounded-br-full" />
       </div>
@@ -211,42 +223,62 @@ const GallerySection = () => {
             ギャラリー
             <Sparkles className="w-4 h-4" />
           </span>
-          <h2 className="text-3xl md:text-4xl lg:text-5xl font-heading font-bold text-foreground mt-3 mb-4">
-            Momen Berharga
-          </h2>
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-heading font-bold text-foreground mt-3 mb-4">Momen Berharga</h2>
           <p className="text-muted-foreground max-w-2xl mx-auto font-body">Koleksi foto dari trip-trip sebelumnya</p>
         </div>
 
         {/* Category Filter */}
         <div className="flex flex-wrap justify-center gap-3 mb-10">
-          {categories.map(category => <button key={category} onClick={() => setActiveCategory(category)} className={`px-5 py-2.5 rounded-xl text-sm font-lexend font-medium transition-all duration-300 ${activeCategory === category ? "bg-primary text-primary-foreground shadow-lg" : "bg-card text-foreground hover:bg-accent border border-border"}`}>
+          {categories.map(category => (
+            <button
+              key={category}
+              onClick={() => setActiveCategory(category)}
+              className={`px-5 py-2.5 rounded-xl text-sm font-lexend font-medium transition-all duration-300 ${
+                activeCategory === category
+                  ? "bg-primary text-primary-foreground shadow-lg"
+                  : "bg-card text-foreground hover:bg-accent border border-border"
+              }`}
+            >
               {category}
-            </button>)}
+            </button>
+          ))}
         </div>
 
         {/* Bento Grid Gallery */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 auto-rows-[180px] md:auto-rows-[220px]">
           {filteredItems.map((item, index) => {
-          const overlayColor = getOverlayColor(item, index);
-          const isAnalyzing = analyzingIds.has(item.id);
-          const hoverEffect = getHoverEffect(index);
-          return <div key={item.id} className={`relative overflow-hidden rounded-2xl cursor-pointer group transition-all duration-500 ease-out shadow-lg hover:shadow-2xl ${getGridClass(index)} ${hoverEffect}`} onClick={() => setSelectedItem(item)} style={{
-            transformOrigin: 'center center'
-          }}>
+            const overlayColor = getOverlayColor(item, index);
+            const isAnalyzing = analyzingIds.has(item.id);
+            const hoverEffect = getHoverEffect(index);
+            
+            return (
+              <div
+                key={item.id}
+                className={`relative overflow-hidden rounded-2xl cursor-pointer group transition-all duration-500 ease-out shadow-lg hover:shadow-2xl ${getGridClass(index)} ${hoverEffect}`}
+                onClick={() => setSelectedItem(item)}
+                style={{ transformOrigin: 'center center' }}
+              >
                 {/* Image */}
                 <div className="absolute inset-0">
-                  <img src={item.thumbnail} alt={item.caption} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                  <img
+                    src={item.thumbnail}
+                    alt={item.caption}
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                    loading="lazy"
+                  />
                 </div>
 
                 {/* Color Overlay - Always visible at bottom */}
-                <div className="absolute inset-x-0 bottom-0 h-1/2 transition-all duration-500" style={{
-              background: `linear-gradient(to top, ${overlayColor}ee 0%, ${overlayColor}99 40%, transparent 100%)`
-            }} />
+                <div
+                  className="absolute inset-x-0 bottom-0 h-1/2 transition-all duration-500"
+                  style={{ background: `linear-gradient(to top, ${overlayColor}ee 0%, ${overlayColor}99 40%, transparent 100%)` }}
+                />
 
                 {/* Hover overlay for full image */}
-                <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500" style={{
-              background: `linear-gradient(to top, ${overlayColor}dd 0%, ${overlayColor}66 50%, transparent 100%)`
-            }} />
+                <div
+                  className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+                  style={{ background: `linear-gradient(to top, ${overlayColor}dd 0%, ${overlayColor}66 50%, transparent 100%)` }}
+                />
 
                 {/* Japanese-style corner accent */}
                 <div className="absolute top-3 right-3 w-6 h-6 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
@@ -258,103 +290,91 @@ const GallerySection = () => {
 
                 {/* Caption - Always visible */}
                 <div className="absolute inset-x-0 bottom-0 p-4 flex flex-col justify-end">
-                  {/* AI Caption with sparkle */}
                   <div className="flex items-start gap-2">
-                    {isAnalyzing ? <div className="flex items-center gap-2">
+                    {isAnalyzing ? (
+                      <div className="flex items-center gap-2">
                         <div className="w-3 h-3 border-2 border-white/50 border-t-white rounded-full animate-spin" />
                         <span className="text-white/70 text-sm font-body">Menganalisis...</span>
-                      </div> : <>
+                      </div>
+                    ) : (
+                      <>
                         <Sparkles className="w-4 h-4 text-white/80 mt-0.5 flex-shrink-0" />
                         <p className="text-white font-heading font-semibold text-sm md:text-base leading-tight drop-shadow-lg">
                           {item.aiCaption || item.caption}
                         </p>
-                      </>}
+                      </>
+                    )}
                   </div>
 
-                  {/* Location - visible on hover */}
-                  {item.location && <div className="flex items-center gap-1.5 text-white/80 mt-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                  {item.location && (
+                    <div className="flex items-center gap-1.5 text-white/80 mt-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                       <MapPin className="w-3 h-3" />
                       <span className="text-xs font-body">{item.location}</span>
-                    </div>}
+                    </div>
+                  )}
                 </div>
 
                 {/* Video Play Button */}
-                {item.type === "video" && <div className="absolute inset-0 flex items-center justify-center">
+                {item.type === "video" && (
+                  <div className="absolute inset-0 flex items-center justify-center">
                     <div className="w-14 h-14 rounded-full bg-white/90 flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-xl">
                       <Play className="w-5 h-5 text-foreground ml-1" />
                     </div>
-                  </div>}
-              </div>;
-        })}
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
       </div>
 
       {/* Lightbox */}
-      {selectedItem &&
-        typeof document !== "undefined" &&
-        createPortal(
-          <div
-            className="fixed inset-0 z-[9999] bg-[#FAF8F5] backdrop-blur-xl flex items-center justify-center p-4"
-            onClick={() => setSelectedItem(null)}
+      {selectedItem && typeof document !== "undefined" && createPortal(
+        <div
+          className="fixed inset-0 z-[9999] bg-[#FAF8F5] backdrop-blur-xl flex items-center justify-center p-4"
+          onClick={() => setSelectedItem(null)}
+        >
+          <button
+            onClick={(e) => { e.stopPropagation(); setSelectedItem(null); }}
+            className="absolute top-[calc(env(safe-area-inset-top)+1rem)] right-[calc(env(safe-area-inset-right)+1rem)] z-[10000] w-14 h-14 rounded-full bg-foreground flex items-center justify-center text-background hover:bg-primary hover:text-primary-foreground transition-all duration-300 shadow-2xl border-2 border-foreground/20"
+            aria-label="Tutup galeri"
+            type="button"
           >
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                setSelectedItem(null);
-              }}
-              className="absolute top-[calc(env(safe-area-inset-top)+1rem)] right-[calc(env(safe-area-inset-right)+1rem)] z-[10000] w-14 h-14 rounded-full bg-foreground flex items-center justify-center text-background hover:bg-primary hover:text-primary-foreground transition-all duration-300 shadow-2xl border-2 border-foreground/20"
-              aria-label="Tutup galeri"
-              type="button"
-            >
-              <X className="w-7 h-7" strokeWidth={2.5} />
-            </button>
+            <X className="w-7 h-7" strokeWidth={2.5} />
+          </button>
 
-            {/* Mobile fallback close button (always visible) */}
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                setSelectedItem(null);
-              }}
-              className="md:hidden fixed bottom-[calc(env(safe-area-inset-bottom)+1.25rem)] left-1/2 -translate-x-1/2 z-[10000] rounded-full bg-primary px-6 py-3 text-primary-foreground shadow-lg"
-            >
-              Tutup
-            </button>
+          <button
+            type="button"
+            onClick={(e) => { e.stopPropagation(); setSelectedItem(null); }}
+            className="md:hidden fixed bottom-[calc(env(safe-area-inset-bottom)+1.25rem)] left-1/2 -translate-x-1/2 z-[10000] rounded-full bg-primary px-6 py-3 text-primary-foreground shadow-lg"
+          >
+            Tutup
+          </button>
 
-            <div className="max-w-5xl w-full max-h-[90vh] relative" onClick={(e) => e.stopPropagation()}>
-              {selectedItem.type === "video" ? (
-                <video
-                  src={selectedItem.src}
-                  controls
-                  autoPlay
-                  className="w-full h-auto max-h-[80vh] object-contain rounded-2xl"
-                />
-              ) : (
-                <img
-                  src={selectedItem.src}
-                  alt={selectedItem.caption}
-                  className="w-full h-auto max-h-[80vh] object-contain rounded-2xl"
-                  loading="eager"
-                />
-              )}
-              <div className="mt-4 text-center">
-                <div className="flex items-center justify-center gap-2 mb-2">
-                  <Sparkles className="w-5 h-5 text-primary" />
-                  <p className="text-foreground text-xl font-semibold">
-                    {selectedItem.aiCaption || selectedItem.caption}
-                  </p>
-                </div>
-                {selectedItem.location && (
-                  <div className="flex items-center justify-center gap-2 text-muted-foreground">
-                    <MapPin className="w-4 h-4" />
-                    <span>{selectedItem.location}</span>
-                  </div>
-                )}
+          <div className="max-w-5xl w-full max-h-[90vh] relative" onClick={(e) => e.stopPropagation()}>
+            {selectedItem.type === "video" ? (
+              <video src={selectedItem.src} controls autoPlay className="w-full h-auto max-h-[80vh] object-contain rounded-2xl" />
+            ) : (
+              <img src={selectedItem.src} alt={selectedItem.caption} className="w-full h-auto max-h-[80vh] object-contain rounded-2xl" loading="eager" />
+            )}
+            <div className="mt-4 text-center">
+              <div className="flex items-center justify-center gap-2 mb-2">
+                <Sparkles className="w-5 h-5 text-primary" />
+                <p className="text-foreground text-xl font-semibold">{selectedItem.aiCaption || selectedItem.caption}</p>
               </div>
+              {selectedItem.location && (
+                <div className="flex items-center justify-center gap-2 text-muted-foreground">
+                  <MapPin className="w-4 h-4" />
+                  <span>{selectedItem.location}</span>
+                </div>
+              )}
             </div>
-          </div>,
-          document.body,
-        )}
-    </section>;
+          </div>
+        </div>,
+        document.body
+      )}
+    </section>
+  );
 };
+
 export default GallerySection;

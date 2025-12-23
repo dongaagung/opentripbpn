@@ -1,10 +1,11 @@
 import { MapPin, Clock, Star, ImageIcon, ArrowRight, Eye } from "lucide-react";
 import { BentoCard } from "@/components/ui/BentoCard";
 import { Button } from "@/components/ui/button";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useGalleryImages } from "@/hooks/useGalleryImages";
+import { useGallery } from "@/contexts/GalleryContext";
 import { PackageDetailDialog } from "./PackageDetailDialog";
+import { openWhatsApp } from "@/lib/whatsapp";
 import { Json } from "@/integrations/supabase/types";
 
 interface ItineraryItem {
@@ -53,14 +54,14 @@ interface PackageCardProps {
   onViewDetails: () => void;
 }
 
-const PackageCard = ({ pkg, fallbackImage, onViewDetails }: PackageCardProps) => {
-  const formatPrice = (price: number) => {
-    if (price >= 1000000) {
-      return `${(price / 1000000).toFixed(1)} Juta`;
-    }
-    return price.toLocaleString("id-ID");
-  };
+const formatPrice = (price: number) => {
+  if (price >= 1000000) {
+    return `${(price / 1000000).toFixed(1)} Juta`;
+  }
+  return price.toLocaleString("id-ID");
+};
 
+const PackageCard = ({ pkg, fallbackImage, onViewDetails }: PackageCardProps) => {
   const imageUrl = pkg.cover_image_url || fallbackImage;
 
   return (
@@ -76,6 +77,7 @@ const PackageCard = ({ pkg, fallbackImage, onViewDetails }: PackageCardProps) =>
           src={imageUrl}
           alt={pkg.title}
           className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+          loading="lazy"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-card-foreground/90 via-card-foreground/40 to-transparent" />
       </div>
@@ -153,7 +155,7 @@ const PackagesSection = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [selectedPackage, setSelectedPackage] = useState<TripPackage | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const { getImage } = useGalleryImages(10);
+  const { getImage } = useGallery();
 
   useEffect(() => {
     const fetchPackages = async () => {
@@ -190,6 +192,9 @@ const PackagesSection = () => {
     setSelectedPackage({ ...pkg, cover_image_url: pkg.cover_image_url || getImage(index) });
     setDialogOpen(true);
   };
+
+  // Memoize fallback image
+  const fallbackImage = useMemo(() => getImage(0), [getImage]);
 
   if (isLoading) {
     return (
@@ -254,7 +259,7 @@ const PackagesSection = () => {
             <PackageCard 
               key={pkg.id} 
               pkg={pkg} 
-              fallbackImage={getImage(index)} 
+              fallbackImage={getImage(index) || ''} 
               onViewDetails={() => handleViewDetails(pkg, index)}
             />
           ))}
@@ -270,12 +275,7 @@ const PackagesSection = () => {
             <Button
               variant="hero"
               size="lg"
-              onClick={() => {
-                window.open(
-                  "https://wa.me/6282350125334?text=Halo%20opentrip.bpn%2C%20saya%20ingin%20request%20paket%20trip%20custom%20ke%20Jepang",
-                  "_blank"
-                );
-              }}
+              onClick={() => openWhatsApp("Halo opentrip.bpn, saya ingin request paket trip custom ke Jepang")}
             >
               Custom Trip
             </Button>
@@ -288,7 +288,7 @@ const PackagesSection = () => {
         pkg={selectedPackage}
         open={dialogOpen}
         onOpenChange={setDialogOpen}
-        fallbackImage={getImage(0)}
+        fallbackImage={fallbackImage || ''}
       />
     </section>
   );
