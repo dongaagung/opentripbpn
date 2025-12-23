@@ -7,6 +7,14 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { Eye, EyeOff, Loader2, ArrowLeft } from 'lucide-react';
 import { z } from 'zod';
+import { supabase } from '@/integrations/supabase/client';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 
 const emailSchema = z.object({
   email: z.string().email('Email tidak valid'),
@@ -17,6 +25,14 @@ const authSchema = z.object({
   password: z.string().min(6, 'Password minimal 6 karakter'),
 });
 
+const passwordChangeSchema = z.object({
+  newPassword: z.string().min(6, 'Password minimal 6 karakter'),
+  confirmPassword: z.string().min(6, 'Password minimal 6 karakter'),
+}).refine((data) => data.newPassword === data.confirmPassword, {
+  message: "Password tidak sama",
+  path: ["confirmPassword"],
+});
+
 export default function Auth() {
   const [mode, setMode] = useState<'login' | 'forgot'>('login');
   const [email, setEmail] = useState('');
@@ -25,14 +41,37 @@ export default function Auth() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
   
-  const { signIn, resetPassword, user } = useAuth();
+  // Change password dialog state
+  const [showChangePassword, setShowChangePassword] = useState(false);
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [changePasswordErrors, setChangePasswordErrors] = useState<{ newPassword?: string; confirmPassword?: string }>({});
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
+  
+  const { signIn, user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (user) {
-      navigate('/admin');
-    }
+    const checkMustChangePassword = async () => {
+      if (user) {
+        // Check if user must change password
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('must_change_password')
+          .eq('user_id', user.id)
+          .single();
+        
+        if (profile?.must_change_password) {
+          setShowChangePassword(true);
+        } else {
+          navigate('/admin');
+        }
+      }
+    };
+    
+    checkMustChangePassword();
   }, [user, navigate]);
 
   const validateForm = () => {
@@ -57,6 +96,38 @@ export default function Auth() {
     }
   };
 
+  const handleResetPassword = async () => {
+    setIsSubmitting(true);
+    try {
+      const response = await supabase.functions.invoke('reset-password', {
+        body: { email }
+      });
+      
+      if (response.error) {
+        toast({
+          title: 'Gagal Mengirim Email',
+          description: response.error.message,
+          variant: 'destructive',
+        });
+      } else {
+        toast({
+          title: 'Email Terkirim',
+          description: 'Silakan cek email Anda untuk password baru.',
+        });
+        setMode('login');
+        setEmail('');
+      }
+    } catch {
+      toast({
+        title: 'Error',
+        description: 'Terjadi kesalahan. Silakan coba lagi.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -66,21 +137,7 @@ export default function Auth() {
 
     try {
       if (mode === 'forgot') {
-        const { error } = await resetPassword(email);
-        if (error) {
-          toast({
-            title: 'Gagal Mengirim Email',
-            description: error.message,
-            variant: 'destructive',
-          });
-        } else {
-          toast({
-            title: 'Email Terkirim',
-            description: 'Silakan cek email Anda untuk reset password.',
-          });
-          setMode('login');
-          setEmail('');
-        }
+        await handleResetPassword();
       } else {
         const { error } = await signIn(email, password);
         if (error) {
@@ -96,7 +153,7 @@ export default function Auth() {
             title: 'Login Berhasil',
             description: 'Selamat datang kembali!',
           });
-          navigate('/admin');
+          // Navigation will be handled by useEffect after checking must_change_password
         }
       }
     } catch {
@@ -107,6 +164,69 @@ export default function Auth() {
       });
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleChangePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    try {
+      passwordChangeSchema.parse({ newPassword, confirmPassword });
+      setChangePasswordErrors({});
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        const fieldErrors: { newPassword?: string; confirmPassword?: string } = {};
+        error.errors.forEach((err) => {
+          if (err.path[0] === 'newPassword') fieldErrors.newPassword = err.message;
+          if (err.path[0] === 'confirmPassword') fieldErrors.confirmPassword = err.message;
+        });
+        setChangePasswordErrors(fieldErrors);
+        return;
+      }
+    }
+
+    setIsChangingPassword(true);
+    
+    try {
+      // Update password using Supabase auth
+      const { error: updateError } = await supabase.auth.updateUser({
+        password: newPassword
+      });
+
+      if (updateError) {
+        toast({
+          title: 'Gagal Mengubah Password',
+          description: updateError.message,
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      // Update profile to mark password as changed
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .update({ must_change_password: false })
+        .eq('user_id', user!.id);
+
+      if (profileError) {
+        console.error('Error updating profile:', profileError);
+      }
+
+      toast({
+        title: 'Password Berhasil Diubah',
+        description: 'Anda akan diarahkan ke dashboard.',
+      });
+
+      setShowChangePassword(false);
+      navigate('/admin');
+    } catch {
+      toast({
+        title: 'Error',
+        description: 'Terjadi kesalahan. Silakan coba lagi.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsChangingPassword(false);
     }
   };
 
@@ -173,7 +293,7 @@ export default function Auth() {
               disabled={isSubmitting}
             >
               {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {mode === 'login' ? 'Masuk' : 'Kirim Link Reset'}
+              {mode === 'login' ? 'Masuk' : 'Kirim Password Baru'}
             </Button>
           </form>
 
@@ -214,6 +334,68 @@ export default function Auth() {
           </div>
         </div>
       </div>
+
+      {/* Change Password Dialog */}
+      <Dialog open={showChangePassword} onOpenChange={() => {}}>
+        <DialogContent className="sm:max-w-md" onPointerDownOutside={(e) => e.preventDefault()}>
+          <DialogHeader>
+            <DialogTitle>Ganti Password</DialogTitle>
+            <DialogDescription>
+              Anda harus mengganti password sementara sebelum melanjutkan.
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleChangePassword} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="newPassword">Password Baru</Label>
+              <div className="relative">
+                <Input
+                  id="newPassword"
+                  type={showNewPassword ? 'text' : 'password'}
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  placeholder="Masukkan password baru"
+                  className="pr-10"
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowNewPassword(!showNewPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  {showNewPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
+              {changePasswordErrors.newPassword && (
+                <p className="text-sm text-destructive">{changePasswordErrors.newPassword}</p>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="confirmPassword">Konfirmasi Password</Label>
+              <Input
+                id="confirmPassword"
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="Konfirmasi password baru"
+                required
+              />
+              {changePasswordErrors.confirmPassword && (
+                <p className="text-sm text-destructive">{changePasswordErrors.confirmPassword}</p>
+              )}
+            </div>
+
+            <Button
+              type="submit"
+              className="w-full"
+              disabled={isChangingPassword}
+            >
+              {isChangingPassword && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Simpan Password Baru
+            </Button>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
