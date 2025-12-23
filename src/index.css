@@ -295,6 +295,19 @@
   .text-balance {
     text-wrap: balance;
   }
+
+  /* When gallery lightbox is open, hide fixed header + floating widgets */
+  html[data-gallery-lightbox="open"] {
+    overflow: hidden;
+  }
+
+  html[data-gallery-lightbox="open"] nav {
+    display: none !important;
+  }
+
+  html[data-gallery-lightbox="open"] .whatsapp-float {
+    display: none !important;
+  }
 }
 
 /* Japanese Wave Background Pattern */
