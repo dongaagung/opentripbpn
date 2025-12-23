@@ -81,9 +81,9 @@ const HeroSection = () => {
 
           {/* Brand Card - Teal */}
           <BentoCard variant="teal" className="flex flex-col justify-center items-center text-center animate-fade-up delay-300" hoverEffect="glow">
-            <span className="text-4xl md:text-5xl font-bold mb-2">opentrip</span>
-            <span className="text-2xl md:text-3xl font-light">.bpn</span>
-            <p className="text-bento-cream/70 mt-4 text-sm">Your Japan Travel Partner</p>
+            <span className="text-4xl md:text-5xl font-bold mb-2 transition-all duration-500 group-hover:scale-110 group-hover:tracking-wide group-hover:text-bento-cream">opentrip</span>
+            <span className="text-2xl md:text-3xl font-light transition-all duration-500 group-hover:scale-105 group-hover:text-primary delay-75">.bpn</span>
+            <p className="text-bento-cream/70 mt-4 text-sm transition-all duration-300 group-hover:text-bento-cream group-hover:translate-y-1 group-hover:tracking-wider">Your Japan Travel Partner</p>
           </BentoCard>
 
           {/* Kyoto Preview Card - Tall */}
