@@ -1,4 +1,4 @@
-import { MapPin, Clock, Star, ImageIcon, ArrowRight, Eye } from "lucide-react";
+import { MapPin, Clock, Star, ImageIcon, ArrowRight } from "lucide-react";
 import { BentoCard } from "@/components/ui/BentoCard";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState, useMemo } from "react";
@@ -90,13 +90,6 @@ const PackageCard = ({ pkg, fallbackImage, onViewDetails }: PackageCardProps) =>
           <span className="text-card-foreground font-semibold text-sm">4.9</span>
         </div>
 
-        {/* View Details Overlay */}
-        <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-          <div className="flex items-center gap-2 text-bento-cream bg-primary/80 backdrop-blur-sm px-4 py-2 rounded-full transition-all duration-300 hover:scale-105 hover:bg-primary">
-            <Eye className="w-5 h-5 transition-transform duration-300 group-hover:animate-pulse" />
-            <span className="font-medium">Lihat Detail</span>
-          </div>
-        </div>
 
         {/* Info */}
         <div className="space-y-3">
