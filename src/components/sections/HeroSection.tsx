@@ -116,13 +116,13 @@ const HeroSection = () => {
 
           {/* CTA Card */}
           <BentoCard variant="default" className="flex flex-col justify-center items-center text-center animate-fade-up delay-600" hoverEffect="lift">
-            <p className="text-card-foreground/80 text-sm mb-3">Siap untuk petualangan?</p>
-            <p className="text-xl font-bold text-card-foreground mb-4">Mulai dari</p>
-            <div className="flex items-baseline gap-1">
-              <span className="text-3xl font-bold text-primary">IDR 17jt</span>
-              <span className="text-lg text-primary">juta</span>
+            <p className="text-card-foreground/80 text-sm mb-3 transition-all duration-300 group-hover:text-card-foreground group-hover:-translate-y-1">Siap untuk petualangan?</p>
+            <p className="text-xl font-bold text-card-foreground mb-4 transition-all duration-300 group-hover:scale-105 group-hover:tracking-wide">Mulai dari</p>
+            <div className="flex items-baseline gap-1 transition-all duration-500 group-hover:scale-110 group-hover:gap-2">
+              <span className="text-3xl font-bold text-primary transition-all duration-300 group-hover:drop-shadow-[0_0_10px_rgba(220,38,38,0.5)]">IDR 17jt</span>
+              <span className="text-lg text-primary transition-all duration-300 group-hover:translate-x-1">juta</span>
             </div>
-            <p className="text-card-foreground/60 text-xs mt-2">*per orang</p>
+            <p className="text-card-foreground/60 text-xs mt-2 transition-all duration-300 group-hover:text-card-foreground/80 group-hover:translate-y-1">*per orang</p>
           </BentoCard>
         </div>
 
