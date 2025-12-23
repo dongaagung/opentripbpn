@@ -94,7 +94,7 @@ const HeroSection = () => {
             {shuffledImageSets.hero.length > 0 && (
               <DynamicImage 
                 images={shuffledImageSets.hero} 
-                interval={7000} 
+                interval={10000} 
                 alt="Japan destination" 
                 className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                 priority
@@ -143,7 +143,7 @@ const HeroSection = () => {
             {shuffledImageSets.tokyo.length > 0 && (
               <DynamicImage 
                 images={shuffledImageSets.tokyo} 
-                interval={7000} 
+                interval={13000} 
                 alt="Gallery preview" 
                 className="absolute inset-0 w-full h-full object-cover transition-all duration-700 group-hover:scale-125 group-hover:rotate-2"
               />
@@ -169,7 +169,7 @@ const HeroSection = () => {
             {shuffledImageSets.kyoto.length > 0 && (
               <DynamicImage 
                 images={shuffledImageSets.kyoto} 
-                interval={7000} 
+                interval={16000} 
                 alt="Gallery preview" 
                 className="absolute inset-0 w-full h-full object-cover transition-all duration-700 group-hover:scale-125 group-hover:-rotate-1"
               />
