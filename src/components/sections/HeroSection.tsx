@@ -20,6 +20,7 @@ const DynamicImage = ({
   priority?: boolean;
 }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [nextIndex, setNextIndex] = useState(1);
   const [isTransitioning, setIsTransitioning] = useState(false);
 
   useEffect(() => {
@@ -28,23 +29,34 @@ const DynamicImage = ({
     const timer = setInterval(() => {
       setIsTransitioning(true);
       setTimeout(() => {
-        setCurrentIndex((prev) => (prev + 1) % images.length);
+        setCurrentIndex(nextIndex);
+        setNextIndex((nextIndex + 1) % images.length);
         setIsTransitioning(false);
-      }, 500);
+      }, 1200); // Longer crossfade duration
     }, interval);
 
     return () => clearInterval(timer);
-  }, [images.length, interval]);
+  }, [images.length, interval, nextIndex]);
 
   if (images.length === 0) return null;
 
   return (
-    <img
-      src={images[currentIndex]}
-      alt={alt}
-      className={`${className} transition-opacity duration-500 ${isTransitioning ? 'opacity-0' : 'opacity-100'}`}
-      loading={priority ? "eager" : "lazy"}
-    />
+    <div className="absolute inset-0 overflow-hidden">
+      {/* Current image */}
+      <img
+        src={images[currentIndex]}
+        alt={alt}
+        className={`${className} absolute inset-0 transition-all duration-[1500ms] ease-in-out ${isTransitioning ? 'opacity-0 scale-105' : 'opacity-100 scale-100'}`}
+        loading={priority ? "eager" : "lazy"}
+      />
+      {/* Next image (underneath, fading in) */}
+      <img
+        src={images[nextIndex]}
+        alt={alt}
+        className={`${className} absolute inset-0 transition-all duration-[1500ms] ease-in-out ${isTransitioning ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}
+        loading="lazy"
+      />
+    </div>
   );
 };
 

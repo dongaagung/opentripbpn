@@ -11,11 +11,11 @@ interface BentoCardProps extends React.HTMLAttributes<HTMLDivElement> {
 
 const hoverEffectClasses = {
   lift: "hover:-translate-y-4 hover:shadow-[0_20px_40px_rgba(0,0,0,0.15)] hover:shadow-primary/30 hover:border-primary/20",
-  tilt: "hover:rotate-2 hover:scale-[1.05] hover:shadow-[0_15px_35px_rgba(0,0,0,0.12)] hover:-translate-y-1",
-  zoom: "hover:scale-[1.06] hover:shadow-[0_25px_50px_rgba(0,0,0,0.18)] hover:z-10",
+  tilt: "hover:rotate-1 hover:scale-[1.02] hover:shadow-[0_15px_35px_rgba(0,0,0,0.12)] hover:-translate-y-1",
+  zoom: "hover:scale-[1.03] hover:shadow-[0_25px_50px_rgba(0,0,0,0.18)] hover:z-10",
   glow: "hover:shadow-[0_0_50px_rgba(220,38,38,0.5),0_0_80px_rgba(220,38,38,0.3)] hover:-translate-y-2 hover:border-primary/40",
-  float: "hover:-translate-y-5 hover:translate-x-2 hover:shadow-[0_20px_40px_rgba(0,0,0,0.15)] hover:rotate-1",
-  pulse: "hover:shadow-[0_0_40px_rgba(13,148,136,0.4)] hover:scale-[1.02] hover:-translate-y-1",
+  float: "hover:-translate-y-3 hover:translate-x-1 hover:shadow-[0_20px_40px_rgba(0,0,0,0.15)] hover:rotate-[0.5deg]",
+  pulse: "hover:shadow-[0_0_40px_rgba(13,148,136,0.4)] hover:scale-[1.015] hover:-translate-y-1",
   shimmer: "hover:-translate-y-2 hover:shadow-[0_15px_35px_rgba(0,0,0,0.12)] hover:scale-[1.02]",
 };
 
@@ -108,7 +108,7 @@ const BentoCard = React.forwardRef<HTMLDivElement, BentoCardProps>(
       <div
         ref={ref}
         className={cn(
-          "group relative overflow-hidden rounded-2xl p-6 transition-all duration-500 ease-out",
+          "group relative overflow-hidden rounded-2xl p-6 transition-all duration-700 ease-out",
           variantClasses[variant],
           sizeClasses[size],
           hover && hoverEffectClasses[hoverEffect],
