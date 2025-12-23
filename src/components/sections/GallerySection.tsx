@@ -279,9 +279,16 @@ const GallerySection = () => {
       </div>
 
       {/* Lightbox */}
-      {selectedItem && <div className="fixed inset-0 z-50 bg-background/95 backdrop-blur-xl flex items-center justify-center p-4" onClick={() => setSelectedItem(null)}>
-          <button onClick={() => setSelectedItem(null)} className="absolute top-6 right-6 w-12 h-12 rounded-full bg-card flex items-center justify-center text-foreground hover:bg-accent transition-colors border border-border">
-            <X className="w-6 h-6" />
+      {selectedItem && <div className="fixed inset-0 z-50 bg-black/90 backdrop-blur-xl flex items-center justify-center p-4" onClick={() => setSelectedItem(null)}>
+          <button 
+            onClick={(e) => {
+              e.stopPropagation();
+              setSelectedItem(null);
+            }} 
+            className="absolute top-6 right-6 z-[60] w-14 h-14 rounded-full bg-white flex items-center justify-center text-black hover:bg-primary hover:text-white transition-all duration-300 shadow-2xl border-2 border-white/20"
+            aria-label="Close lightbox"
+          >
+            <X className="w-7 h-7" strokeWidth={2.5} />
           </button>
 
           <div className="max-w-5xl w-full max-h-[90vh] relative" onClick={e => e.stopPropagation()}>
