@@ -3,9 +3,77 @@ import { Button } from "@/components/ui/button";
 import { BentoCard } from "@/components/ui/BentoCard";
 import { useGallery } from "@/contexts/GalleryContext";
 import { openWhatsApp } from "@/lib/whatsapp";
+import { useState, useEffect, useMemo } from "react";
+
+// Dynamic image component with fade transition
+const DynamicImage = ({ 
+  images, 
+  interval = 7000, 
+  alt, 
+  className,
+  priority = false 
+}: { 
+  images: string[]; 
+  interval?: number; 
+  alt: string; 
+  className?: string;
+  priority?: boolean;
+}) => {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isTransitioning, setIsTransitioning] = useState(false);
+
+  useEffect(() => {
+    if (images.length <= 1) return;
+
+    const timer = setInterval(() => {
+      setIsTransitioning(true);
+      setTimeout(() => {
+        setCurrentIndex((prev) => (prev + 1) % images.length);
+        setIsTransitioning(false);
+      }, 500);
+    }, interval);
+
+    return () => clearInterval(timer);
+  }, [images.length, interval]);
+
+  if (images.length === 0) return null;
+
+  return (
+    <img
+      src={images[currentIndex]}
+      alt={alt}
+      className={`${className} transition-opacity duration-500 ${isTransitioning ? 'opacity-0' : 'opacity-100'}`}
+      loading={priority ? "eager" : "lazy"}
+    />
+  );
+};
 
 const HeroSection = () => {
-  const { getImage } = useGallery();
+  const { images } = useGallery();
+
+  // Shuffle and distribute images for each card
+  const shuffledImageSets = useMemo(() => {
+    if (images.length === 0) return { hero: [], tokyo: [], kyoto: [] };
+    
+    const allUrls = images.map(img => img.file_url);
+    
+    // Shuffle array
+    const shuffle = (arr: string[]) => {
+      const shuffled = [...arr];
+      for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+      }
+      return shuffled;
+    };
+
+    // Create different shuffled sets for each card
+    return {
+      hero: shuffle(allUrls),
+      tokyo: shuffle(allUrls),
+      kyoto: shuffle(allUrls),
+    };
+  }, [images]);
 
   const scrollToPackages = () => {
     const element = document.querySelector("#packages");
@@ -13,10 +81,6 @@ const HeroSection = () => {
       element.scrollIntoView({ behavior: "smooth" });
     }
   };
-
-  const heroImage = getImage(0);
-  const tokyoImage = getImage(1);
-  const kyotoImage = getImage(2);
 
   return (
     <section id="home" className="relative min-h-screen pt-20 pb-12 overflow-hidden">
@@ -27,7 +91,15 @@ const HeroSection = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6 mt-8">
           {/* Main Hero Card - Large */}
           <BentoCard variant="default" size="large" className="relative overflow-hidden min-h-[400px] lg:min-h-[500px] animate-fade-up" hover={true} hoverEffect="zoom">
-            {heroImage && <img src={heroImage} alt="Mount Fuji with cherry blossoms" className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" loading="eager" />}
+            {shuffledImageSets.hero.length > 0 && (
+              <DynamicImage 
+                images={shuffledImageSets.hero} 
+                interval={7000} 
+                alt="Japan destination" 
+                className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                priority
+              />
+            )}
             <div className="absolute inset-0 bg-gradient-to-t from-card-foreground/80 via-card-foreground/20 to-transparent" />
             <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8">
               <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-bento-cream mb-3 leading-tight">
@@ -68,7 +140,14 @@ const HeroSection = () => {
 
           {/* Tokyo Preview Card */}
           <BentoCard variant="default" className="relative overflow-hidden min-h-[200px] animate-fade-up delay-200" hover={true} hoverEffect="tilt">
-            {tokyoImage && <img src={tokyoImage} alt="Gallery preview" className="absolute inset-0 w-full h-full object-cover transition-all duration-700 group-hover:scale-125 group-hover:rotate-2" loading="lazy" />}
+            {shuffledImageSets.tokyo.length > 0 && (
+              <DynamicImage 
+                images={shuffledImageSets.tokyo} 
+                interval={7000} 
+                alt="Gallery preview" 
+                className="absolute inset-0 w-full h-full object-cover transition-all duration-700 group-hover:scale-125 group-hover:rotate-2"
+              />
+            )}
             <div className="absolute inset-0 bg-gradient-to-t from-card-foreground/70 to-transparent transition-all duration-500 group-hover:from-card-foreground/90" />
             <div className="absolute bottom-0 left-0 right-0 p-4 transition-all duration-300 group-hover:translate-y-[-4px]">
               <div className="flex items-center gap-2 text-bento-cream transition-all duration-300 group-hover:gap-3">
@@ -87,7 +166,14 @@ const HeroSection = () => {
 
           {/* Kyoto Preview Card - Tall */}
           <BentoCard variant="default" size="tall" className="relative overflow-hidden min-h-[200px] animate-fade-up delay-400" hover={true} hoverEffect="float">
-            {kyotoImage && <img src={kyotoImage} alt="Gallery preview" className="absolute inset-0 w-full h-full object-cover transition-all duration-700 group-hover:scale-125 group-hover:-rotate-1" loading="lazy" />}
+            {shuffledImageSets.kyoto.length > 0 && (
+              <DynamicImage 
+                images={shuffledImageSets.kyoto} 
+                interval={7000} 
+                alt="Gallery preview" 
+                className="absolute inset-0 w-full h-full object-cover transition-all duration-700 group-hover:scale-125 group-hover:-rotate-1"
+              />
+            )}
             <div className="absolute inset-0 bg-gradient-to-t from-card-foreground/70 to-transparent transition-all duration-500 group-hover:from-card-foreground/90" />
             <div className="absolute bottom-0 left-0 right-0 p-4 transition-all duration-300 group-hover:translate-y-[-6px]">
               <div className="flex items-center gap-2 text-bento-cream mb-2 transition-all duration-300 group-hover:gap-3">
