@@ -5,6 +5,7 @@ import {
   Package, 
   Image, 
   MessageSquare, 
+  Mail,
   LogOut,
   ChevronLeft,
   ChevronRight
@@ -18,6 +19,7 @@ const menuItems = [
   { path: '/admin/packages', label: 'Paket Trip', icon: Package },
   { path: '/admin/gallery', label: 'Galeri', icon: Image },
   { path: '/admin/testimonials', label: 'Testimoni', icon: MessageSquare },
+  { path: '/admin/messages', label: 'Pesan Masuk', icon: Mail },
 ];
 
 export default function AdminSidebar() {

@@ -13,6 +13,7 @@ import Dashboard from "./pages/admin/Dashboard";
 import PackagesAdmin from "./pages/admin/PackagesAdmin";
 import GalleryAdmin from "./pages/admin/GalleryAdmin";
 import TestimonialsAdmin from "./pages/admin/TestimonialsAdmin";
+import MessagesAdmin from "./pages/admin/MessagesAdmin";
 
 const queryClient = new QueryClient();
 
@@ -32,6 +33,7 @@ const App = () => (
               <Route path="packages" element={<PackagesAdmin />} />
               <Route path="gallery" element={<GalleryAdmin />} />
               <Route path="testimonials" element={<TestimonialsAdmin />} />
+              <Route path="messages" element={<MessagesAdmin />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>

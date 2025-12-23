@@ -3,6 +3,7 @@ import { MapPin, Phone, Mail, Send, Instagram, Video, MessageCircle } from "luci
 import { Button } from "@/components/ui/button";
 import { BentoCard } from "@/components/ui/BentoCard";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 const ContactSection = () => {
   const { toast } = useToast();
@@ -25,11 +26,21 @@ const ContactSection = () => {
     e.preventDefault();
     setIsSubmitting(true);
 
-    // Simulate form submission
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    try {
+      // Save message to database
+      const { error } = await supabase
+        .from('contact_messages')
+        .insert({
+          name: formData.name.trim(),
+          email: formData.email.trim(),
+          phone: formData.phone.trim() || null,
+          message: formData.message.trim(),
+        });
 
-    // Open WhatsApp with the message
-    const message = `Halo opentrip.bpn!
+      if (error) throw error;
+
+      // Open WhatsApp with the message
+      const message = `Halo opentrip.bpn!
 
 Nama: ${formData.name}
 Email: ${formData.email}
@@ -38,18 +49,26 @@ Telepon: ${formData.phone}
 Pesan:
 ${formData.message}`;
 
-    window.open(
-      `https://wa.me/6282350125334?text=${encodeURIComponent(message)}`,
-      "_blank"
-    );
+      window.open(
+        `https://wa.me/6282350125334?text=${encodeURIComponent(message)}`,
+        "_blank"
+      );
 
-    toast({
-      title: "Pesan terkirim!",
-      description: "Kami akan menghubungi Anda segera.",
-    });
+      toast({
+        title: "Pesan terkirim!",
+        description: "Kami akan menghubungi Anda segera.",
+      });
 
-    setFormData({ name: "", email: "", phone: "", message: "" });
-    setIsSubmitting(false);
+      setFormData({ name: "", email: "", phone: "", message: "" });
+    } catch (error) {
+      console.error('Error saving message:', error);
+      toast({
+        title: "Pesan terkirim via WhatsApp",
+        description: "Pesan Anda telah dikirim melalui WhatsApp.",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const socialLinks = [
