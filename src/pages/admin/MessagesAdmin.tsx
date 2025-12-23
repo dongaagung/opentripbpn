@@ -5,9 +5,10 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { Mail, MailOpen, Trash2, Phone, Clock, User } from 'lucide-react';
+import { Mail, MailOpen, Trash2, Phone, Clock, User, Loader2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { id } from 'date-fns/locale';
+import AdminHeader from '@/components/admin/AdminHeader';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -97,45 +98,37 @@ export default function MessagesAdmin() {
 
   const unreadCount = messages?.filter(m => !m.is_read).length ?? 0;
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-      </div>
-    );
-  }
-
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">Pesan Masuk</h1>
-          <p className="text-muted-foreground mt-1">
-            {unreadCount > 0 ? `${unreadCount} pesan belum dibaca` : 'Semua pesan sudah dibaca'}
-          </p>
-        </div>
-      </div>
+    <div>
+      <AdminHeader 
+        title="Pesan Masuk" 
+        subtitle={unreadCount > 0 ? `${unreadCount} pesan belum dibaca` : 'Semua pesan sudah dibaca'} 
+      />
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Message List */}
-        <div className="lg:col-span-1 space-y-3">
-          {messages?.length === 0 ? (
-            <Card className="p-8 text-center">
-              <Mail className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-              <p className="text-muted-foreground">Belum ada pesan masuk</p>
-            </Card>
-          ) : (
-            messages?.map((message) => (
-              <Card
-                key={message.id}
-                className={`cursor-pointer transition-all hover:shadow-md ${
-                  selectedMessage?.id === message.id 
-                    ? 'ring-2 ring-primary' 
-                    : ''
-                } ${!message.is_read ? 'bg-primary/5 border-primary/20' : ''}`}
-                onClick={() => handleSelectMessage(message)}
-              >
-                <CardContent className="p-4">
+      <div className="p-6">
+        {isLoading ? (
+          <div className="flex justify-center py-12">
+            <Loader2 className="w-8 h-8 animate-spin text-primary" />
+          </div>
+        ) : messages?.length === 0 ? (
+          <div className="text-center py-12 text-muted-foreground">
+            <Mail className="w-12 h-12 mx-auto mb-4 opacity-50" />
+            <p>Belum ada pesan masuk</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Message List */}
+            <div className="lg:col-span-1 space-y-3">
+              {messages?.map((message) => (
+                <div
+                  key={message.id}
+                  className={`cursor-pointer transition-all bg-card/80 backdrop-blur-xl rounded-xl border p-4 hover:shadow-md ${
+                    selectedMessage?.id === message.id 
+                      ? 'ring-2 ring-primary border-primary/50' 
+                      : 'border-border/50'
+                  } ${!message.is_read ? 'bg-primary/5 border-primary/30' : ''}`}
+                  onClick={() => handleSelectMessage(message)}
+                >
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
@@ -154,116 +147,114 @@ export default function MessagesAdmin() {
                       </p>
                     </div>
                   </div>
-                </CardContent>
-              </Card>
-            ))
-          )}
-        </div>
+                </div>
+              ))}
+            </div>
 
-        {/* Message Detail */}
-        <div className="lg:col-span-2">
-          {selectedMessage ? (
-            <Card>
-              <CardHeader className="border-b">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <CardTitle className="flex items-center gap-2">
-                      <User className="w-5 h-5" />
-                      {selectedMessage.name}
-                    </CardTitle>
-                    <div className="flex flex-wrap gap-4 mt-3 text-sm text-muted-foreground">
-                      <a href={`mailto:${selectedMessage.email}`} className="flex items-center gap-1 hover:text-primary">
-                        <Mail className="w-4 h-4" />
-                        {selectedMessage.email}
-                      </a>
-                      {selectedMessage.phone && (
-                        <a href={`tel:${selectedMessage.phone}`} className="flex items-center gap-1 hover:text-primary">
-                          <Phone className="w-4 h-4" />
-                          {selectedMessage.phone}
-                        </a>
-                      )}
-                      <span className="flex items-center gap-1">
-                        <Clock className="w-4 h-4" />
-                        {format(new Date(selectedMessage.created_at), 'dd MMMM yyyy, HH:mm', { locale: id })}
-                      </span>
+            {/* Message Detail */}
+            <div className="lg:col-span-2">
+              {selectedMessage ? (
+                <div className="bg-card/80 backdrop-blur-xl rounded-xl border border-border/50 overflow-hidden">
+                  <div className="border-b border-border/50 p-6">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">
+                          <User className="w-5 h-5" />
+                          {selectedMessage.name}
+                        </h3>
+                        <div className="flex flex-wrap gap-4 mt-3 text-sm text-muted-foreground">
+                          <a href={`mailto:${selectedMessage.email}`} className="flex items-center gap-1 hover:text-primary">
+                            <Mail className="w-4 h-4" />
+                            {selectedMessage.email}
+                          </a>
+                          {selectedMessage.phone && (
+                            <a href={`tel:${selectedMessage.phone}`} className="flex items-center gap-1 hover:text-primary">
+                              <Phone className="w-4 h-4" />
+                              {selectedMessage.phone}
+                            </a>
+                          )}
+                          <span className="flex items-center gap-1">
+                            <Clock className="w-4 h-4" />
+                            {format(new Date(selectedMessage.created_at), 'dd MMMM yyyy, HH:mm', { locale: id })}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Badge variant={selectedMessage.is_read ? "secondary" : "default"}>
+                          {selectedMessage.is_read ? (
+                            <>
+                              <MailOpen className="w-3 h-3 mr-1" />
+                              Dibaca
+                            </>
+                          ) : (
+                            <>
+                              <Mail className="w-3 h-3 mr-1" />
+                              Baru
+                            </>
+                          )}
+                        </Badge>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button variant="destructive" size="icon">
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Hapus Pesan?</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Pesan dari {selectedMessage.name} akan dihapus permanen.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Batal</AlertDialogCancel>
+                              <AlertDialogAction
+                                onClick={() => deleteMutation.mutate(selectedMessage.id)}
+                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                              >
+                                Hapus
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      </div>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Badge variant={selectedMessage.is_read ? "secondary" : "default"}>
-                      {selectedMessage.is_read ? (
-                        <>
-                          <MailOpen className="w-3 h-3 mr-1" />
-                          Dibaca
-                        </>
-                      ) : (
-                        <>
-                          <Mail className="w-3 h-3 mr-1" />
-                          Baru
-                        </>
-                      )}
-                    </Badge>
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button variant="destructive" size="icon">
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>Hapus Pesan?</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            Pesan dari {selectedMessage.name} akan dihapus permanen.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Batal</AlertDialogCancel>
-                          <AlertDialogAction
-                            onClick={() => deleteMutation.mutate(selectedMessage.id)}
-                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                          >
-                            Hapus
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
+                  <div className="p-6">
+                    <p className="whitespace-pre-wrap text-foreground leading-relaxed">
+                      {selectedMessage.message}
+                    </p>
+                    <div className="mt-6 pt-6 border-t border-border/50 flex gap-3">
+                      <Button
+                        onClick={() => window.open(`https://wa.me/${selectedMessage.phone?.replace(/\D/g, '')}`, '_blank')}
+                        disabled={!selectedMessage.phone}
+                        className="gap-2"
+                      >
+                        <Phone className="w-4 h-4" />
+                        Balas via WhatsApp
+                      </Button>
+                      <Button
+                        variant="outline"
+                        onClick={() => window.open(`mailto:${selectedMessage.email}`, '_blank')}
+                        className="gap-2"
+                      >
+                        <Mail className="w-4 h-4" />
+                        Balas via Email
+                      </Button>
+                    </div>
                   </div>
                 </div>
-              </CardHeader>
-              <CardContent className="p-6">
-                <div className="prose prose-sm max-w-none">
-                  <p className="whitespace-pre-wrap text-foreground leading-relaxed">
-                    {selectedMessage.message}
-                  </p>
+              ) : (
+                <div className="bg-card/80 backdrop-blur-xl rounded-xl border border-border/50 h-full flex items-center justify-center min-h-[400px]">
+                  <div className="text-center text-muted-foreground">
+                    <MailOpen className="w-16 h-16 mx-auto mb-4 opacity-50" />
+                    <p>Pilih pesan untuk melihat detail</p>
+                  </div>
                 </div>
-                <div className="mt-6 pt-6 border-t flex gap-3">
-                  <Button
-                    onClick={() => window.open(`https://wa.me/${selectedMessage.phone?.replace(/\D/g, '')}`, '_blank')}
-                    disabled={!selectedMessage.phone}
-                    className="gap-2"
-                  >
-                    <Phone className="w-4 h-4" />
-                    Balas via WhatsApp
-                  </Button>
-                  <Button
-                    variant="outline"
-                    onClick={() => window.open(`mailto:${selectedMessage.email}`, '_blank')}
-                    className="gap-2"
-                  >
-                    <Mail className="w-4 h-4" />
-                    Balas via Email
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ) : (
-            <Card className="h-full flex items-center justify-center min-h-[400px]">
-              <div className="text-center text-muted-foreground">
-                <MailOpen className="w-16 h-16 mx-auto mb-4 opacity-50" />
-                <p>Pilih pesan untuk melihat detail</p>
-              </div>
-            </Card>
-          )}
-        </div>
+              )}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
