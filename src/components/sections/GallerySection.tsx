@@ -294,7 +294,7 @@ const GallerySection = () => {
         typeof document !== "undefined" &&
         createPortal(
           <div
-            className="fixed inset-0 z-[9999] bg-black/95 backdrop-blur-xl flex items-center justify-center p-4"
+            className="fixed inset-0 z-[9999] bg-[#FAF8F5] backdrop-blur-xl flex items-center justify-center p-4"
             onClick={() => setSelectedItem(null)}
           >
             <button
@@ -302,7 +302,7 @@ const GallerySection = () => {
                 e.stopPropagation();
                 setSelectedItem(null);
               }}
-              className="absolute top-[calc(env(safe-area-inset-top)+1rem)] right-[calc(env(safe-area-inset-right)+1rem)] z-[10000] w-14 h-14 rounded-full bg-white flex items-center justify-center text-black hover:bg-primary hover:text-primary-foreground transition-all duration-300 shadow-2xl border-2 border-white/20"
+              className="absolute top-[calc(env(safe-area-inset-top)+1rem)] right-[calc(env(safe-area-inset-right)+1rem)] z-[10000] w-14 h-14 rounded-full bg-foreground flex items-center justify-center text-background hover:bg-primary hover:text-primary-foreground transition-all duration-300 shadow-2xl border-2 border-foreground/20"
               aria-label="Tutup galeri"
               type="button"
             >
