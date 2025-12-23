@@ -279,16 +279,28 @@ const GallerySection = () => {
       </div>
 
       {/* Lightbox */}
-      {selectedItem && <div className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-xl flex items-center justify-center p-4" onClick={() => setSelectedItem(null)}>
+      {selectedItem && <div className="fixed inset-0 z-[999] bg-black/95 backdrop-blur-xl flex items-center justify-center p-4" onClick={() => setSelectedItem(null)}>
           <button 
             onClick={(e) => {
               e.stopPropagation();
               setSelectedItem(null);
             }} 
-            className="absolute top-6 right-6 z-[110] w-14 h-14 rounded-full bg-white flex items-center justify-center text-black hover:bg-primary hover:text-white transition-all duration-300 shadow-2xl border-2 border-white/20"
-            aria-label="Close lightbox"
+            className="absolute top-[calc(env(safe-area-inset-top)+1rem)] right-[calc(env(safe-area-inset-right)+1rem)] z-[1000] w-14 h-14 rounded-full bg-white flex items-center justify-center text-black hover:bg-primary hover:text-primary-foreground transition-all duration-300 shadow-2xl border-2 border-white/20"
+            aria-label="Tutup galeri"
           >
             <X className="w-7 h-7" strokeWidth={2.5} />
+          </button>
+
+          {/* Mobile fallback close button (always visible) */}
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              setSelectedItem(null);
+            }}
+            className="md:hidden fixed bottom-[calc(env(safe-area-inset-bottom)+1.25rem)] left-1/2 -translate-x-1/2 z-[1000] rounded-full bg-primary px-6 py-3 text-primary-foreground shadow-lg"
+          >
+            Tutup
           </button>
 
           <div className="max-w-5xl w-full max-h-[90vh] relative" onClick={e => e.stopPropagation()}>
