@@ -101,15 +101,15 @@ const HeroSection = () => {
 
           {/* Schedule Card */}
           <BentoCard variant="glass" className="flex flex-col justify-between animate-fade-up delay-500" hoverEffect="pulse">
-            <div className="flex items-center gap-3 text-foreground/70 text-sm">
-              <Calendar className="w-4 h-4" />
-              <span>Next Trip</span>
+            <div className="flex items-center gap-3 text-foreground/70 text-sm transition-all duration-300 group-hover:text-foreground group-hover:gap-4">
+              <Calendar className="w-4 h-4 transition-all duration-300 group-hover:scale-125 group-hover:rotate-12 group-hover:text-primary" />
+              <span className="transition-all duration-300 group-hover:tracking-wider">Next Trip</span>
             </div>
-            <div className="mt-4">
-              <span className="text-3xl md:text-4xl font-bold text-foreground">MAR</span>
-              <p className="text-lg text-foreground/90">2026</p>
+            <div className="mt-4 transition-all duration-500 group-hover:scale-105 origin-left">
+              <span className="text-3xl md:text-4xl font-bold text-foreground transition-all duration-300 group-hover:text-primary group-hover:drop-shadow-lg">MAR</span>
+              <p className="text-lg text-foreground/90 transition-all duration-300 group-hover:text-foreground group-hover:translate-x-1">2026</p>
             </div>
-            <div className="mt-4 py-2 px-3 rounded-xl bg-primary/20 text-primary text-sm font-medium inline-block">
+            <div className="mt-4 py-2 px-3 rounded-xl bg-primary/20 text-primary text-sm font-medium inline-block transition-all duration-300 group-hover:bg-primary group-hover:text-primary-foreground group-hover:scale-105 group-hover:shadow-lg group-hover:shadow-primary/30">
               Slot Terbatas (Hanya 8 pax)
             </div>
           </BentoCard>
