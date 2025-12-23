@@ -55,12 +55,124 @@ function isValidImageUrl(url: string): boolean {
   }
 }
 
+// Valid color palette - whitelist approach for security
+const VALID_COLORS = [
+  '#DC5240', // warm red
+  '#2D7D90', // ocean teal
+  '#E07B39', // sunset orange
+  '#3D8B6E', // forest green
+  '#B8860B', // golden
+  '#5E4B8A', // dusk purple
+  '#C75B7A', // sakura pink
+  '#4A6D7C', // slate blue
+];
+
+const DEFAULT_COLOR = '#DC5240';
+
+// Output sanitization helpers
+function sanitizeCaption(caption: unknown): string {
+  if (typeof caption !== 'string') {
+    return 'Keindahan Tersembunyi';
+  }
+  // Remove any HTML/script tags, limit length, trim whitespace
+  return caption
+    .replace(/<[^>]*>/g, '')
+    .replace(/[<>'"&]/g, '') // Remove potentially dangerous characters
+    .substring(0, 50)
+    .trim() || 'Keindahan Tersembunyi';
+}
+
+function validateColor(color: unknown): string {
+  if (typeof color !== 'string') {
+    return DEFAULT_COLOR;
+  }
+  // Normalize and validate against whitelist
+  const normalizedColor = color.trim().toUpperCase();
+  const validColor = VALID_COLORS.find(c => c.toUpperCase() === normalizedColor);
+  return validColor || DEFAULT_COLOR;
+}
+
+// Simple in-memory rate limiting
+const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
+const RATE_LIMIT_WINDOW_MS = 60000; // 1 minute
+const RATE_LIMIT_MAX_REQUESTS = 30; // 30 requests per minute per IP
+
+function checkRateLimit(clientId: string): boolean {
+  const now = Date.now();
+  const record = rateLimitMap.get(clientId);
+  
+  if (!record || now > record.resetTime) {
+    rateLimitMap.set(clientId, { count: 1, resetTime: now + RATE_LIMIT_WINDOW_MS });
+    return true;
+  }
+  
+  if (record.count >= RATE_LIMIT_MAX_REQUESTS) {
+    return false;
+  }
+  
+  record.count++;
+  return true;
+}
+
+// Clean up old rate limit entries periodically
+setInterval(() => {
+  const now = Date.now();
+  for (const [key, value] of rateLimitMap.entries()) {
+    if (now > value.resetTime) {
+      rateLimitMap.delete(key);
+    }
+  }
+}, 60000);
+
+// Simple in-memory cache for analyzed images
+const analysisCache = new Map<string, { result: { caption: string; overlayColor: string }; expiry: number }>();
+const CACHE_TTL_MS = 3600000; // 1 hour cache
+
+function getCachedAnalysis(imageUrl: string): { caption: string; overlayColor: string } | null {
+  const cached = analysisCache.get(imageUrl);
+  if (cached && Date.now() < cached.expiry) {
+    console.log('Cache hit for:', imageUrl.substring(0, 50));
+    return cached.result;
+  }
+  if (cached) {
+    analysisCache.delete(imageUrl);
+  }
+  return null;
+}
+
+function setCachedAnalysis(imageUrl: string, result: { caption: string; overlayColor: string }): void {
+  // Limit cache size
+  if (analysisCache.size > 500) {
+    // Remove oldest entries
+    const entries = Array.from(analysisCache.entries());
+    entries.sort((a, b) => a[1].expiry - b[1].expiry);
+    for (let i = 0; i < 100; i++) {
+      analysisCache.delete(entries[i][0]);
+    }
+  }
+  analysisCache.set(imageUrl, { result, expiry: Date.now() + CACHE_TTL_MS });
+}
+
 serve(async (req) => {
   const origin = req.headers.get('origin');
   const corsHeaders = getCorsHeaders(origin);
 
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
+  }
+
+  // Get client identifier for rate limiting
+  const clientId = req.headers.get('x-forwarded-for') || 
+                   req.headers.get('x-real-ip') || 
+                   'unknown';
+
+  // Check rate limit
+  if (!checkRateLimit(clientId)) {
+    console.warn('Rate limit exceeded for:', clientId);
+    return new Response(
+      JSON.stringify({ error: 'Rate limit exceeded. Please try again later.' }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 429 }
+    );
   }
 
   try {
@@ -83,6 +195,14 @@ serve(async (req) => {
     if (imageUrl.length > 2000) {
       console.error('Image URL too long');
       throw new Error('Image URL exceeds maximum length');
+    }
+
+    // Check cache first
+    const cachedResult = getCachedAnalysis(imageUrl);
+    if (cachedResult) {
+      return new Response(JSON.stringify(cachedResult), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
     console.log('Analyzing image:', imageUrl.substring(0, 100));
@@ -144,31 +264,32 @@ Only respond with the JSON, no other text.`
     const content = data.choices?.[0]?.message?.content || '';
     
     // Parse the JSON from the response
-    let result;
+    let parsedResult;
     try {
       // Remove any markdown code blocks if present
       const cleanContent = content.replace(/```json\n?|\n?```/g, '').trim();
-      result = JSON.parse(cleanContent);
+      parsedResult = JSON.parse(cleanContent);
     } catch {
       console.log('Failed to parse AI response, using fallback');
-      // Fallback with varied colors based on random selection
-      const fallbackColors = ['#DC5240', '#2D7D90', '#E07B39', '#3D8B6E', '#B8860B', '#4A6D7C'];
-      const randomColor = fallbackColors[Math.floor(Math.random() * fallbackColors.length)];
-      result = {
-        caption: 'Keindahan Tersembunyi',
-        overlayColor: randomColor
-      };
+      parsedResult = null;
     }
 
-    return new Response(JSON.stringify(result), {
+    // Sanitize and validate output - SECURITY: Never trust AI response directly
+    const sanitizedResult = {
+      caption: sanitizeCaption(parsedResult?.caption),
+      overlayColor: validateColor(parsedResult?.overlayColor)
+    };
+
+    // Cache the sanitized result
+    setCachedAnalysis(imageUrl, sanitizedResult);
+
+    return new Response(JSON.stringify(sanitizedResult), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (error) {
     console.error('Error analyzing image:', error);
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     // Return fallback with varied colors instead of error to prevent UI issues
-    const fallbackColors = ['#DC5240', '#2D7D90', '#E07B39', '#3D8B6E', '#B8860B', '#C75B7A'];
-    const randomColor = fallbackColors[Math.floor(Math.random() * fallbackColors.length)];
+    const randomColor = VALID_COLORS[Math.floor(Math.random() * VALID_COLORS.length)];
     return new Response(
       JSON.stringify({ 
         caption: 'Momen Indah',
