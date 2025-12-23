@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { createPortal } from "react-dom";
 import { Play, X, MapPin, ImageIcon, Sparkles } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 interface GalleryItem {
@@ -22,6 +23,16 @@ const GallerySection = () => {
   const [selectedItem, setSelectedItem] = useState<GalleryItem | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [analyzingIds, setAnalyzingIds] = useState<Set<string>>(new Set());
+
+  // Hide navbar / floating elements while lightbox is open
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    const root = document.documentElement;
+    if (selectedItem) root.setAttribute("data-gallery-lightbox", "open");
+    else root.removeAttribute("data-gallery-lightbox");
+    return () => root.removeAttribute("data-gallery-lightbox");
+  }, [selectedItem]);
+
   const analyzeImage = useCallback(async (item: GalleryItem) => {
     if (item.type === "video" || item.aiCaption) return;
     setAnalyzingIds(prev => new Set(prev).add(item.id));
@@ -279,46 +290,71 @@ const GallerySection = () => {
       </div>
 
       {/* Lightbox */}
-      {selectedItem && <div className="fixed inset-0 z-[999] bg-black/95 backdrop-blur-xl flex items-center justify-center p-4" onClick={() => setSelectedItem(null)}>
-          <button 
-            onClick={(e) => {
-              e.stopPropagation();
-              setSelectedItem(null);
-            }} 
-            className="absolute top-[calc(env(safe-area-inset-top)+1rem)] right-[calc(env(safe-area-inset-right)+1rem)] z-[1000] w-14 h-14 rounded-full bg-white flex items-center justify-center text-black hover:bg-primary hover:text-primary-foreground transition-all duration-300 shadow-2xl border-2 border-white/20"
-            aria-label="Tutup galeri"
+      {selectedItem &&
+        typeof document !== "undefined" &&
+        createPortal(
+          <div
+            className="fixed inset-0 z-[9999] bg-black/95 backdrop-blur-xl flex items-center justify-center p-4"
+            onClick={() => setSelectedItem(null)}
           >
-            <X className="w-7 h-7" strokeWidth={2.5} />
-          </button>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setSelectedItem(null);
+              }}
+              className="absolute top-[calc(env(safe-area-inset-top)+1rem)] right-[calc(env(safe-area-inset-right)+1rem)] z-[10000] w-14 h-14 rounded-full bg-white flex items-center justify-center text-black hover:bg-primary hover:text-primary-foreground transition-all duration-300 shadow-2xl border-2 border-white/20"
+              aria-label="Tutup galeri"
+              type="button"
+            >
+              <X className="w-7 h-7" strokeWidth={2.5} />
+            </button>
 
-          {/* Mobile fallback close button (always visible) */}
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              setSelectedItem(null);
-            }}
-            className="md:hidden fixed bottom-[calc(env(safe-area-inset-bottom)+1.25rem)] left-1/2 -translate-x-1/2 z-[1000] rounded-full bg-primary px-6 py-3 text-primary-foreground shadow-lg"
-          >
-            Tutup
-          </button>
+            {/* Mobile fallback close button (always visible) */}
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setSelectedItem(null);
+              }}
+              className="md:hidden fixed bottom-[calc(env(safe-area-inset-bottom)+1.25rem)] left-1/2 -translate-x-1/2 z-[10000] rounded-full bg-primary px-6 py-3 text-primary-foreground shadow-lg"
+            >
+              Tutup
+            </button>
 
-          <div className="max-w-5xl w-full max-h-[90vh] relative" onClick={e => e.stopPropagation()}>
-            {selectedItem.type === "video" ? <video src={selectedItem.src} controls autoPlay className="w-full h-auto max-h-[80vh] object-contain rounded-2xl" /> : <img src={selectedItem.src} alt={selectedItem.caption} className="w-full h-auto max-h-[80vh] object-contain rounded-2xl" />}
-            <div className="mt-4 text-center">
-              <div className="flex items-center justify-center gap-2 mb-2">
-                <Sparkles className="w-5 h-5 text-primary" />
-                <p className="text-foreground text-xl font-semibold">
-                  {selectedItem.aiCaption || selectedItem.caption}
-                </p>
+            <div className="max-w-5xl w-full max-h-[90vh] relative" onClick={(e) => e.stopPropagation()}>
+              {selectedItem.type === "video" ? (
+                <video
+                  src={selectedItem.src}
+                  controls
+                  autoPlay
+                  className="w-full h-auto max-h-[80vh] object-contain rounded-2xl"
+                />
+              ) : (
+                <img
+                  src={selectedItem.src}
+                  alt={selectedItem.caption}
+                  className="w-full h-auto max-h-[80vh] object-contain rounded-2xl"
+                  loading="eager"
+                />
+              )}
+              <div className="mt-4 text-center">
+                <div className="flex items-center justify-center gap-2 mb-2">
+                  <Sparkles className="w-5 h-5 text-primary" />
+                  <p className="text-foreground text-xl font-semibold">
+                    {selectedItem.aiCaption || selectedItem.caption}
+                  </p>
+                </div>
+                {selectedItem.location && (
+                  <div className="flex items-center justify-center gap-2 text-muted-foreground">
+                    <MapPin className="w-4 h-4" />
+                    <span>{selectedItem.location}</span>
+                  </div>
+                )}
               </div>
-              {selectedItem.location && <div className="flex items-center justify-center gap-2 text-muted-foreground">
-                  <MapPin className="w-4 h-4" />
-                  <span>{selectedItem.location}</span>
-                </div>}
             </div>
-          </div>
-        </div>}
+          </div>,
+          document.body,
+        )}
     </section>;
 };
 export default GallerySection;
