@@ -59,18 +59,32 @@ export default function UsersAdmin() {
   const { data: users, isLoading } = useQuery({
     queryKey: ['admin-users'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      // First get all user roles
+      const { data: rolesData, error: rolesError } = await supabase
         .from('user_roles')
-        .select(`
-          user_id,
-          role,
-          created_at,
-          profile:profiles!user_roles_user_id_fkey(full_name)
-        `)
+        .select('user_id, role, created_at')
         .order('created_at', { ascending: false });
       
-      if (error) throw error;
-      return data as unknown as UserWithRole[];
+      if (rolesError) throw rolesError;
+
+      // Then get profiles for those users
+      const userIds = rolesData.map(r => r.user_id);
+      const { data: profilesData, error: profilesError } = await supabase
+        .from('profiles')
+        .select('user_id, full_name')
+        .in('user_id', userIds);
+      
+      if (profilesError) throw profilesError;
+
+      // Merge the data
+      const profilesMap = new Map(profilesData?.map(p => [p.user_id, p]) || []);
+      
+      return rolesData.map(role => ({
+        user_id: role.user_id,
+        role: role.role,
+        created_at: role.created_at,
+        profile: profilesMap.get(role.user_id) || null,
+      })) as UserWithRole[];
     },
   });
 
