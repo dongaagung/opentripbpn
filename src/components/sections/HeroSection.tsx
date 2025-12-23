@@ -52,18 +52,18 @@ const HeroSection = () => {
 
           {/* Stats Card - Red Accent */}
           <BentoCard variant="red" className="flex flex-col justify-between animate-fade-up delay-100" hoverEffect="lift">
-            <div>
-              <span className="text-xs font-medium text-primary-foreground/70 uppercase tracking-wider">
+            <div className="transition-all duration-300 group-hover:translate-x-1">
+              <span className="text-xs font-medium text-primary-foreground/70 uppercase tracking-wider transition-all duration-300 group-hover:text-primary-foreground group-hover:tracking-widest">
                 Pengalaman
               </span>
-              <div className="mt-4">
-                <span className="text-5xl md:text-6xl font-bold">2+</span>
-                <p className="text-primary-foreground/90 mt-2">Trip telah dilaksanakan (2026 akan ada 3-4 Trip)</p>
+              <div className="mt-4 transition-all duration-500 group-hover:scale-105 origin-left">
+                <span className="text-5xl md:text-6xl font-bold transition-all duration-300 group-hover:text-primary-foreground group-hover:drop-shadow-lg">2+</span>
+                <p className="text-primary-foreground/90 mt-2 transition-all duration-300 group-hover:text-primary-foreground">Trip telah dilaksanakan (2026 akan ada 3-4 Trip)</p>
               </div>
             </div>
-            <div className="mt-6 flex items-center gap-2 text-primary-foreground/80">
-              <Users className="w-5 h-5" />
-              <span className="text-sm">7+ peserta puas</span>
+            <div className="mt-6 flex items-center gap-2 text-primary-foreground/80 transition-all duration-300 group-hover:text-primary-foreground group-hover:translate-x-2 group-hover:gap-3">
+              <Users className="w-5 h-5 transition-transform duration-300 group-hover:scale-125 group-hover:rotate-12" />
+              <span className="text-sm transition-all duration-300 group-hover:font-medium">7+ peserta puas</span>
             </div>
           </BentoCard>
 
