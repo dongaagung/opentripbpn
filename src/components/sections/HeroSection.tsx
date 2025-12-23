@@ -34,7 +34,7 @@ const HeroSection = () => {
               <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-bento-cream mb-3 leading-tight">
                 Jelajahi
                 <br />
-                <span className="text-primary">Keindahan Jepang</span>
+                <span className="text-primary-foreground">Keindahan Jepang</span>
               </h1>
               <p className="text-bento-cream/90 text-base md:text-lg mb-6 max-w-md">
                 Open trip eksklusif dengan pengalaman tak terlupakan bersama opentrip.bpn
