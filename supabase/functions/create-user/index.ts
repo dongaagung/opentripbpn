@@ -76,6 +76,20 @@ serve(async (req) => {
       throw roleError;
     }
 
+    // Create profile entry
+    const { error: profileError } = await supabaseClient
+      .from("profiles")
+      .insert({ 
+        user_id: newUser.user.id, 
+        full_name: fullName,
+        must_change_password: true 
+      });
+
+    if (profileError) {
+      console.error("Error creating profile:", profileError);
+      // Don't rollback - user and role are already created
+    }
+
     return new Response(
       JSON.stringify({ user: newUser.user, message: "User created successfully" }),
       { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
