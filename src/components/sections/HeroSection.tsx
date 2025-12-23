@@ -69,12 +69,12 @@ const HeroSection = () => {
 
           {/* Tokyo Preview Card */}
           <BentoCard variant="default" className="relative overflow-hidden min-h-[200px] animate-fade-up delay-200" hover={true} hoverEffect="tilt">
-            {tokyoImage && <img src={tokyoImage} alt="Gallery preview" className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 hover:scale-110" loading="eager" />}
-            <div className="absolute inset-0 bg-gradient-to-t from-card-foreground/70 to-transparent" />
-            <div className="absolute bottom-0 left-0 right-0 p-4">
-              <div className="flex items-center gap-2 text-bento-cream">
-                <MapPin className="w-4 h-4" />
-                <span className="font-semibold">Tokyo</span>
+            {tokyoImage && <img src={tokyoImage} alt="Gallery preview" className="absolute inset-0 w-full h-full object-cover transition-all duration-700 group-hover:scale-125 group-hover:rotate-2" loading="eager" />}
+            <div className="absolute inset-0 bg-gradient-to-t from-card-foreground/70 to-transparent transition-all duration-500 group-hover:from-card-foreground/90" />
+            <div className="absolute bottom-0 left-0 right-0 p-4 transition-all duration-300 group-hover:translate-y-[-4px]">
+              <div className="flex items-center gap-2 text-bento-cream transition-all duration-300 group-hover:gap-3">
+                <MapPin className="w-4 h-4 transition-all duration-300 group-hover:scale-125 group-hover:text-primary" />
+                <span className="font-semibold transition-all duration-300 group-hover:tracking-wide group-hover:text-primary-foreground">Tokyo</span>
               </div>
             </div>
           </BentoCard>
