@@ -1,26 +1,25 @@
 import { ChevronDown, MapPin, Calendar, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { BentoCard } from "@/components/ui/BentoCard";
-import { useGalleryImages } from "@/hooks/useGalleryImages";
+import { useGallery } from "@/contexts/GalleryContext";
+import { openWhatsApp } from "@/lib/whatsapp";
+
 const HeroSection = () => {
-  const {
-    getImage
-  } = useGalleryImages(5);
+  const { getImage } = useGallery();
+
   const scrollToPackages = () => {
     const element = document.querySelector("#packages");
     if (element) {
-      element.scrollIntoView({
-        behavior: "smooth"
-      });
+      element.scrollIntoView({ behavior: "smooth" });
     }
   };
-  const openWhatsApp = () => {
-    window.open("https://wa.me/6282350125334?text=Halo%20opentrip.bpn%2C%20saya%20tertarik%20dengan%20paket%20trip%20ke%20Jepang", "_blank");
-  };
+
   const heroImage = getImage(0);
   const tokyoImage = getImage(1);
   const kyotoImage = getImage(2);
-  return <section id="home" className="relative min-h-screen pt-20 pb-12 overflow-hidden">
+
+  return (
+    <section id="home" className="relative min-h-screen pt-20 pb-12 overflow-hidden">
       {/* Background */}
       <div className="absolute inset-0 pattern-overlay" />
 
@@ -43,7 +42,7 @@ const HeroSection = () => {
                 <Button variant="bento" size="lg" onClick={scrollToPackages}>
                   Lihat Paket Trip
                 </Button>
-                <Button variant="heroOutline" size="lg" onClick={openWhatsApp}>
+                <Button variant="heroOutline" size="lg" onClick={() => openWhatsApp()}>
                   Hubungi Kami
                 </Button>
               </div>
@@ -69,7 +68,7 @@ const HeroSection = () => {
 
           {/* Tokyo Preview Card */}
           <BentoCard variant="default" className="relative overflow-hidden min-h-[200px] animate-fade-up delay-200" hover={true} hoverEffect="tilt">
-            {tokyoImage && <img src={tokyoImage} alt="Gallery preview" className="absolute inset-0 w-full h-full object-cover transition-all duration-700 group-hover:scale-125 group-hover:rotate-2" loading="eager" />}
+            {tokyoImage && <img src={tokyoImage} alt="Gallery preview" className="absolute inset-0 w-full h-full object-cover transition-all duration-700 group-hover:scale-125 group-hover:rotate-2" loading="lazy" />}
             <div className="absolute inset-0 bg-gradient-to-t from-card-foreground/70 to-transparent transition-all duration-500 group-hover:from-card-foreground/90" />
             <div className="absolute bottom-0 left-0 right-0 p-4 transition-all duration-300 group-hover:translate-y-[-4px]">
               <div className="flex items-center gap-2 text-bento-cream transition-all duration-300 group-hover:gap-3">
@@ -88,7 +87,7 @@ const HeroSection = () => {
 
           {/* Kyoto Preview Card - Tall */}
           <BentoCard variant="default" size="tall" className="relative overflow-hidden min-h-[200px] animate-fade-up delay-400" hover={true} hoverEffect="float">
-            {kyotoImage && <img src={kyotoImage} alt="Gallery preview" className="absolute inset-0 w-full h-full object-cover transition-all duration-700 group-hover:scale-125 group-hover:-rotate-1" loading="eager" />}
+            {kyotoImage && <img src={kyotoImage} alt="Gallery preview" className="absolute inset-0 w-full h-full object-cover transition-all duration-700 group-hover:scale-125 group-hover:-rotate-1" loading="lazy" />}
             <div className="absolute inset-0 bg-gradient-to-t from-card-foreground/70 to-transparent transition-all duration-500 group-hover:from-card-foreground/90" />
             <div className="absolute bottom-0 left-0 right-0 p-4 transition-all duration-300 group-hover:translate-y-[-6px]">
               <div className="flex items-center gap-2 text-bento-cream mb-2 transition-all duration-300 group-hover:gap-3">
@@ -134,6 +133,8 @@ const HeroSection = () => {
           </button>
         </div>
       </div>
-    </section>;
+    </section>
+  );
 };
+
 export default HeroSection;
