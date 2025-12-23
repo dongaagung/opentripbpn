@@ -393,7 +393,7 @@ export default function PackagesAdmin() {
                   )}
                   <div className="flex gap-2">
                     <Button
-                      variant="outline"
+                      variant="secondary"
                       size="sm"
                       onClick={() => openDialog(pkg)}
                       className="flex-1"
