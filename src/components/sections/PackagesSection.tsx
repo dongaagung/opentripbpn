@@ -83,30 +83,31 @@ const PackageCard = ({ pkg, fallbackImage, onViewDetails }: PackageCardProps) =>
       {/* Content */}
       <div className="relative z-10 h-full flex flex-col justify-end min-h-[320px]">
         {/* Rating Badge */}
-        <div className="absolute top-4 right-4 flex items-center gap-1 bg-bento-cream/90 backdrop-blur-sm px-3 py-1.5 rounded-full">
-          <Star className="w-4 h-4 text-amber-500 fill-amber-500" />
+        <div className="absolute top-4 right-4 flex items-center gap-1 bg-bento-cream/90 backdrop-blur-sm px-3 py-1.5 rounded-full transition-all duration-300 hover:scale-110 hover:shadow-lg hover:bg-bento-cream cursor-default">
+          <Star className="w-4 h-4 text-amber-500 fill-amber-500 transition-transform duration-300 group-hover:rotate-12" />
           <span className="text-card-foreground font-semibold text-sm">4.9</span>
         </div>
 
         {/* View Details Overlay */}
         <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-          <div className="flex items-center gap-2 text-bento-cream bg-primary/80 backdrop-blur-sm px-4 py-2 rounded-full">
-            <Eye className="w-5 h-5" />
+          <div className="flex items-center gap-2 text-bento-cream bg-primary/80 backdrop-blur-sm px-4 py-2 rounded-full transition-all duration-300 hover:scale-105 hover:bg-primary">
+            <Eye className="w-5 h-5 transition-transform duration-300 group-hover:animate-pulse" />
             <span className="font-medium">Lihat Detail</span>
           </div>
         </div>
 
         {/* Info */}
         <div className="space-y-3">
-          <div className="flex items-center gap-2 text-bento-cream/80">
-            <MapPin className="w-4 h-4" />
+          {/* Location & Duration Badge */}
+          <div className="inline-flex items-center gap-2 text-bento-cream/80 bg-card-foreground/20 backdrop-blur-sm px-3 py-1.5 rounded-full transition-all duration-300 hover:bg-card-foreground/40 hover:scale-105 hover:text-bento-cream cursor-default">
+            <MapPin className="w-4 h-4 transition-transform duration-300 hover:animate-bounce" />
             <span className="text-sm">{pkg.destination}</span>
-            <span className="mx-2">•</span>
+            <span className="mx-1">•</span>
             <Clock className="w-4 h-4" />
             <span className="text-sm">{pkg.duration_days} Hari</span>
           </div>
 
-          <h3 className="text-2xl font-bold text-bento-cream">{pkg.title}</h3>
+          <h3 className="text-2xl font-bold text-bento-cream transition-all duration-300 group-hover:translate-x-1">{pkg.title}</h3>
 
           {/* Highlights */}
           {pkg.highlights && pkg.highlights.length > 0 && (
@@ -114,13 +115,14 @@ const PackageCard = ({ pkg, fallbackImage, onViewDetails }: PackageCardProps) =>
               {pkg.highlights.slice(0, 3).map((highlight, idx) => (
                 <span
                   key={idx}
-                  className="text-xs px-2 py-1 bg-bento-cream/20 backdrop-blur-sm rounded-lg text-bento-cream"
+                  className="text-xs px-2 py-1 bg-bento-cream/20 backdrop-blur-sm rounded-lg text-bento-cream transition-all duration-300 hover:bg-bento-cream/40 hover:scale-110 hover:-translate-y-1 hover:shadow-md cursor-default"
+                  style={{ transitionDelay: `${idx * 50}ms` }}
                 >
                   {highlight}
                 </span>
               ))}
               {pkg.highlights.length > 3 && (
-                <span className="text-xs px-2 py-1 bg-bento-cream/20 backdrop-blur-sm rounded-lg text-bento-cream">
+                <span className="text-xs px-2 py-1 bg-primary/60 backdrop-blur-sm rounded-lg text-bento-cream transition-all duration-300 hover:bg-primary hover:scale-110 hover:-translate-y-1 cursor-default">
                   +{pkg.highlights.length - 3} more
                 </span>
               )}
@@ -129,15 +131,15 @@ const PackageCard = ({ pkg, fallbackImage, onViewDetails }: PackageCardProps) =>
 
           {/* Price & CTA */}
           <div className="flex items-center justify-between pt-2">
-            <div>
-              <span className="text-bento-cream/60 text-sm">Mulai dari</span>
-              <p className="text-2xl font-bold text-bento-cream">
+            <div className="transition-all duration-300 hover:scale-105 cursor-default group/price">
+              <span className="text-bento-cream/60 text-sm transition-colors duration-300 group-hover/price:text-bento-cream/80">Mulai dari</span>
+              <p className="text-2xl font-bold text-bento-cream transition-all duration-300 group-hover/price:text-primary-foreground group-hover/price:drop-shadow-[0_0_8px_rgba(255,255,255,0.5)]">
                 IDR {formatPrice(pkg.price)}
               </p>
             </div>
-            <Button variant="hero" size="default" onClick={(e) => { e.stopPropagation(); onViewDetails(); }}>
+            <Button variant="hero" size="default" className="transition-all duration-300 hover:scale-105 hover:shadow-xl hover:-translate-y-1" onClick={(e) => { e.stopPropagation(); onViewDetails(); }}>
               Detail
-              <ArrowRight className="w-4 h-4" />
+              <ArrowRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" />
             </Button>
           </div>
         </div>
