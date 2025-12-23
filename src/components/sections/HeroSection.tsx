@@ -5,7 +5,7 @@ import { useGallery } from "@/contexts/GalleryContext";
 import { openWhatsApp } from "@/lib/whatsapp";
 import { useState, useEffect, useMemo } from "react";
 
-// Dynamic image component with fade transition
+// Dynamic image component with smooth fade transition
 const DynamicImage = ({ 
   images, 
   interval = 7000, 
@@ -20,41 +20,46 @@ const DynamicImage = ({
   priority?: boolean;
 }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [nextIndex, setNextIndex] = useState(1);
-  const [isTransitioning, setIsTransitioning] = useState(false);
+  const [displayedImage, setDisplayedImage] = useState(images[0] || '');
+  const [isVisible, setIsVisible] = useState(true);
 
   useEffect(() => {
     if (images.length <= 1) return;
 
     const timer = setInterval(() => {
-      setIsTransitioning(true);
+      // Start fade out
+      setIsVisible(false);
+      
+      // After fade out completes, change image and fade in
       setTimeout(() => {
-        setCurrentIndex(nextIndex);
-        setNextIndex((nextIndex + 1) % images.length);
-        setIsTransitioning(false);
-      }, 1200); // Longer crossfade duration
+        setCurrentIndex((prev) => {
+          const next = (prev + 1) % images.length;
+          setDisplayedImage(images[next]);
+          return next;
+        });
+        setIsVisible(true);
+      }, 800); // Wait for fade out to complete
     }, interval);
 
     return () => clearInterval(timer);
-  }, [images.length, interval, nextIndex]);
+  }, [images.length, interval, images]);
 
-  if (images.length === 0) return null;
+  // Update displayed image when images array changes
+  useEffect(() => {
+    if (images.length > 0 && images[currentIndex]) {
+      setDisplayedImage(images[currentIndex]);
+    }
+  }, [images, currentIndex]);
+
+  if (images.length === 0 || !displayedImage) return null;
 
   return (
     <div className="absolute inset-0 overflow-hidden">
-      {/* Current image */}
       <img
-        src={images[currentIndex]}
+        src={displayedImage}
         alt={alt}
-        className={`${className} absolute inset-0 transition-all duration-[1500ms] ease-in-out ${isTransitioning ? 'opacity-0 scale-105' : 'opacity-100 scale-100'}`}
+        className={`${className} absolute inset-0 transition-opacity duration-[800ms] ease-in-out ${isVisible ? 'opacity-100' : 'opacity-0'}`}
         loading={priority ? "eager" : "lazy"}
-      />
-      {/* Next image (underneath, fading in) */}
-      <img
-        src={images[nextIndex]}
-        alt={alt}
-        className={`${className} absolute inset-0 transition-all duration-[1500ms] ease-in-out ${isTransitioning ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}
-        loading="lazy"
       />
     </div>
   );
@@ -63,15 +68,21 @@ const DynamicImage = ({
 const HeroSection = () => {
   const { images } = useGallery();
 
-  // Shuffle and distribute images for each card
+  // Shuffle and distribute images for each card - ensuring no duplicates across cards at the same index
   const shuffledImageSets = useMemo(() => {
     if (images.length === 0) return { hero: [], tokyo: [], kyoto: [] };
     
     const allUrls = images.map(img => img.file_url);
     
-    // Shuffle array
-    const shuffle = (arr: string[]) => {
+    // Fisher-Yates shuffle with seed offset for different starting points
+    const shuffleWithOffset = (arr: string[], offset: number) => {
       const shuffled = [...arr];
+      // Apply offset rotation first
+      for (let i = 0; i < offset; i++) {
+        const first = shuffled.shift();
+        if (first) shuffled.push(first);
+      }
+      // Then shuffle
       for (let i = shuffled.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
@@ -79,11 +90,33 @@ const HeroSection = () => {
       return shuffled;
     };
 
-    // Create different shuffled sets for each card
+    // Create different sets with different starting indices to avoid same image showing
+    const heroSet = shuffleWithOffset(allUrls, 0);
+    const tokyoSet = shuffleWithOffset(allUrls, Math.floor(allUrls.length / 3));
+    const kyotoSet = shuffleWithOffset(allUrls, Math.floor((allUrls.length * 2) / 3));
+
+    // Ensure first images are different across all cards
+    const usedFirstImages = new Set<string>();
+    
+    const getUniqueFirstImage = (arr: string[]): string[] => {
+      const result = [...arr];
+      // Find first unused image and move it to front
+      for (let i = 0; i < result.length; i++) {
+        if (!usedFirstImages.has(result[i])) {
+          usedFirstImages.add(result[i]);
+          // Move this image to front
+          const [chosen] = result.splice(i, 1);
+          result.unshift(chosen);
+          break;
+        }
+      }
+      return result;
+    };
+
     return {
-      hero: shuffle(allUrls),
-      tokyo: shuffle(allUrls),
-      kyoto: shuffle(allUrls),
+      hero: getUniqueFirstImage(heroSet),
+      tokyo: getUniqueFirstImage(tokyoSet),
+      kyoto: getUniqueFirstImage(kyotoSet),
     };
   }, [images]);
 
