@@ -6,8 +6,11 @@ import {
   CheckCircle2, 
   XCircle, 
   MapPinned,
-  ArrowRight 
+  ArrowRight,
+  Download,
+  Loader2
 } from "lucide-react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -18,7 +21,8 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
-
+import { generatePackagePdf } from "@/lib/generatePackagePdf";
+import { toast } from "sonner";
 interface ItineraryItem {
   day: number;
   title: string;
@@ -57,6 +61,8 @@ export function PackageDetailDialog({
   onOpenChange, 
   fallbackImage 
 }: PackageDetailDialogProps) {
+  const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
+  
   if (!pkg) return null;
 
   const formatPrice = (price: number) => {
@@ -86,6 +92,19 @@ export function PackageDetailDialog({
       `https://wa.me/6282350125334?text=${encodeURIComponent(message)}`,
       "_blank"
     );
+  };
+
+  const handleDownloadPdf = async () => {
+    setIsGeneratingPdf(true);
+    try {
+      await generatePackagePdf(pkg);
+      toast.success("PDF berhasil didownload!");
+    } catch (error) {
+      console.error("Error generating PDF:", error);
+      toast.error("Gagal membuat PDF. Silakan coba lagi.");
+    } finally {
+      setIsGeneratingPdf(false);
+    }
   };
 
   const imageUrl = pkg.cover_image_url || fallbackImage;
@@ -295,16 +314,32 @@ export function PackageDetailDialog({
         </ScrollArea>
 
         {/* Sticky Footer */}
-        <div className="border-t bg-background p-4 flex items-center justify-between">
-          <div>
+        <div className="border-t bg-background p-4 flex items-center justify-between gap-3">
+          <div className="flex-1 min-w-0">
             <span className="text-muted-foreground text-sm">Mulai dari</span>
-            <p className="text-2xl font-bold text-primary">{formatPrice(pkg.price)}</p>
+            <p className="text-xl md:text-2xl font-bold text-primary">{formatPrice(pkg.price)}</p>
             <span className="text-xs text-muted-foreground">*tanpa hidden cost</span>
           </div>
-          <Button onClick={bookNow} size="lg" className="gap-2">
-            Tanya Detail
-            <ArrowRight className="w-4 h-4" />
-          </Button>
+          <div className="flex gap-2">
+            <Button 
+              onClick={handleDownloadPdf} 
+              variant="outline" 
+              size="lg" 
+              className="gap-2"
+              disabled={isGeneratingPdf}
+            >
+              {isGeneratingPdf ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Download className="w-4 h-4" />
+              )}
+              <span className="hidden sm:inline">Download PDF</span>
+            </Button>
+            <Button onClick={bookNow} size="lg" className="gap-2">
+              Tanya Detail
+              <ArrowRight className="w-4 h-4" />
+            </Button>
+          </div>
         </div>
       </DialogContent>
     </Dialog>
