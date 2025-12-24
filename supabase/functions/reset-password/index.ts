@@ -27,11 +27,66 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
+    // Verify the caller is authenticated and is an admin
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader) {
+      console.log("No authorization header provided");
+      return new Response(
+        JSON.stringify({ error: "Unauthorized - Authentication required" }),
+        { status: 401, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
+
+    const token = authHeader.replace("Bearer ", "");
+    
+    // Create anon client to verify the token
+    const supabaseAnon = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_ANON_KEY") ?? "",
+      { auth: { autoRefreshToken: false, persistSession: false } }
+    );
+
+    const { data: { user: callingUser }, error: authError } = await supabaseAnon.auth.getUser(token);
+    
+    if (authError || !callingUser) {
+      console.log("Invalid token or user not found:", authError?.message);
+      return new Response(
+        JSON.stringify({ error: "Unauthorized - Invalid token" }),
+        { status: 401, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
+
+    // Check if calling user is an admin using service role
     const supabaseAdmin = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
       { auth: { autoRefreshToken: false, persistSession: false } }
     );
+
+    const { data: roleData, error: roleError } = await supabaseAdmin
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", callingUser.id)
+      .eq("role", "admin")
+      .maybeSingle();
+
+    if (roleError) {
+      console.error("Error checking user role:", roleError);
+      return new Response(
+        JSON.stringify({ error: "Failed to verify permissions" }),
+        { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
+
+    if (!roleData) {
+      console.log("User is not an admin:", callingUser.id);
+      return new Response(
+        JSON.stringify({ error: "Forbidden - Admin access required" }),
+        { status: 403, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
+
+    console.log("Admin user verified:", callingUser.id);
 
     const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
@@ -40,6 +95,15 @@ const handler = async (req: Request): Promise<Response> => {
     if (!email) {
       return new Response(
         JSON.stringify({ error: "Email is required" }),
+        { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return new Response(
+        JSON.stringify({ error: "Invalid email format" }),
         { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }
       );
     }
