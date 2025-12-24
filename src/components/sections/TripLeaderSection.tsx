@@ -11,8 +11,7 @@ interface TripLeader {
   role: string;
   bio: string;
   photo_url: string | null;
-  experience_years: number;
-  trips_led: number;
+  visited_cities: string[];
   languages: string[];
   specialties: string[];
   philosophy: string | null;
@@ -129,10 +128,10 @@ const TripLeaderSection = () => {
               <BentoCard variant="red" className="p-5" hoverEffect="pulse">
                 <div className="flex items-center gap-3 mb-2">
                   <MapPin className="w-5 h-5 text-primary-foreground" />
-                  <span className="text-sm text-primary-foreground/80">Pengalaman</span>
+                  <span className="text-sm text-primary-foreground/80">Kota Dikunjungi</span>
                 </div>
-                <p className="text-3xl font-bold text-primary-foreground">{leader.experience_years}+</p>
-                <p className="text-sm text-primary-foreground/70">tahun traveling ke Jepang</p>
+                <p className="text-3xl font-bold text-primary-foreground">{leader.visited_cities?.length || 0}</p>
+                <p className="text-sm text-primary-foreground/70">kota di Jepang</p>
               </BentoCard>
 
               <BentoCard variant="teal" className="p-5" hoverEffect="pulse">
@@ -140,36 +139,53 @@ const TripLeaderSection = () => {
                   <Languages className="w-5 h-5 text-bento-cream" />
                   <span className="text-sm text-bento-cream/80">Bahasa</span>
                 </div>
-                <p className="text-3xl font-bold text-bento-cream">{leader.languages.length}</p>
-                <p className="text-sm text-bento-cream/70">{leader.languages.join(', ')}</p>
+                <p className="text-3xl font-bold text-bento-cream">{leader.languages?.length || 0}</p>
+                <p className="text-sm text-bento-cream/70">{leader.languages?.join(', ') || '-'}</p>
               </BentoCard>
             </div>
 
-            {/* Specialties Card */}
-            {leader.specialties.length > 0 && (
-              <BentoCard variant="default" className="p-6" hoverEffect="glow">
-                <h4 className="font-bold text-lg text-foreground mb-4 flex items-center gap-2">
-                  <Award className="w-5 h-5 text-primary" />
-                  Spesialisasi Saya
-                </h4>
-                <div className="flex flex-wrap gap-2">
-                  {leader.specialties.map((specialty, idx) => (
-                    <span 
-                      key={idx}
-                      className="px-3 py-1 rounded-full text-sm bg-primary/10 text-primary font-medium"
-                    >
-                      {specialty}
-                    </span>
-                  ))}
+            {/* Visited Cities & Specialties Card */}
+            <BentoCard variant="default" className="p-6" hoverEffect="glow">
+              {/* Visited Cities */}
+              {leader.visited_cities && leader.visited_cities.length > 0 && (
+                <div className="mb-4">
+                  <h4 className="font-bold text-lg text-foreground mb-3 flex items-center gap-2">
+                    <Globe className="w-5 h-5 text-primary" />
+                    Kota yang Pernah Dikunjungi
+                  </h4>
+                  <div className="flex flex-wrap gap-2">
+                    {leader.visited_cities.map((city, idx) => (
+                      <span 
+                        key={idx}
+                        className="px-3 py-1 rounded-full text-sm bg-accent text-accent-foreground font-medium"
+                      >
+                        {city}
+                      </span>
+                    ))}
+                  </div>
                 </div>
-                <div className="mt-4 pt-4 border-t border-border">
-                  <p className="text-sm text-muted-foreground flex items-center gap-2">
-                    <Globe className="w-4 h-4" />
-                    Sudah memimpin {leader.trips_led}+ trip ke Jepang
-                  </p>
+              )}
+              
+              {/* Specialties */}
+              {leader.specialties && leader.specialties.length > 0 && (
+                <div className={leader.visited_cities && leader.visited_cities.length > 0 ? "pt-4 border-t border-border" : ""}>
+                  <h4 className="font-bold text-lg text-foreground mb-3 flex items-center gap-2">
+                    <Award className="w-5 h-5 text-primary" />
+                    Spesialisasi Saya
+                  </h4>
+                  <div className="flex flex-wrap gap-2">
+                    {leader.specialties.map((specialty, idx) => (
+                      <span 
+                        key={idx}
+                        className="px-3 py-1 rounded-full text-sm bg-primary/10 text-primary font-medium"
+                      >
+                        {specialty}
+                      </span>
+                    ))}
+                  </div>
                 </div>
-              </BentoCard>
-            )}
+              )}
+            </BentoCard>
           </div>
         </div>
 
