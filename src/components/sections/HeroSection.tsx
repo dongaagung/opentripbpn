@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import { BentoCard } from "@/components/ui/BentoCard";
 import { useGallery } from "@/contexts/GalleryContext";
 import { supabase } from "@/integrations/supabase/client";
-
 interface HeroStat {
   id: string;
   label: string;
@@ -13,33 +12,31 @@ interface HeroStat {
 }
 
 // Dynamic image component with smooth fade transition
-const DynamicImage = ({ 
-  images, 
-  interval = 7000, 
-  alt, 
+const DynamicImage = ({
+  images,
+  interval = 7000,
+  alt,
   className,
-  priority = false 
-}: { 
-  images: string[]; 
-  interval?: number; 
-  alt: string; 
+  priority = false
+}: {
+  images: string[];
+  interval?: number;
+  alt: string;
   className?: string;
   priority?: boolean;
 }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [displayedImage, setDisplayedImage] = useState(images[0] || '');
   const [isVisible, setIsVisible] = useState(true);
-
   useEffect(() => {
     if (images.length <= 1) return;
-
     const timer = setInterval(() => {
       // Start fade out
       setIsVisible(false);
-      
+
       // After fade out completes, change image and fade in
       setTimeout(() => {
-        setCurrentIndex((prev) => {
+        setCurrentIndex(prev => {
           const next = (prev + 1) % images.length;
           setDisplayedImage(images[next]);
           return next;
@@ -47,7 +44,6 @@ const DynamicImage = ({
         setIsVisible(true);
       }, 800); // Wait for fade out to complete
     }, interval);
-
     return () => clearInterval(timer);
   }, [images.length, interval, images]);
 
@@ -57,47 +53,40 @@ const DynamicImage = ({
       setDisplayedImage(images[currentIndex]);
     }
   }, [images, currentIndex]);
-
   if (images.length === 0 || !displayedImage) return null;
-
-  return (
-    <div className="absolute inset-0 overflow-hidden">
-      <img
-        src={displayedImage}
-        alt={alt}
-        className={`${className} absolute inset-0 transition-opacity duration-[800ms] ease-in-out ${isVisible ? 'opacity-100' : 'opacity-0'}`}
-        loading={priority ? "eager" : "lazy"}
-      />
-    </div>
-  );
+  return <div className="absolute inset-0 overflow-hidden">
+      <img src={displayedImage} alt={alt} className={`${className} absolute inset-0 transition-opacity duration-[800ms] ease-in-out ${isVisible ? 'opacity-100' : 'opacity-0'}`} loading={priority ? "eager" : "lazy"} />
+    </div>;
 };
-
 const HeroSection = () => {
-  const { images } = useGallery();
+  const {
+    images
+  } = useGallery();
   const [heroStats, setHeroStats] = useState<HeroStat[]>([]);
-
   useEffect(() => {
     const fetchHeroStats = async () => {
-      const { data, error } = await supabase
-        .from('hero_stats')
-        .select('*')
-        .eq('is_active', true)
-        .order('display_order', { ascending: true });
-
+      const {
+        data,
+        error
+      } = await supabase.from('hero_stats').select('*').eq('is_active', true).order('display_order', {
+        ascending: true
+      });
       if (!error && data) {
         setHeroStats(data);
       }
     };
-
     fetchHeroStats();
   }, []);
 
   // Shuffle and distribute images for each card - ensuring no duplicates across cards at the same index
   const shuffledImageSets = useMemo(() => {
-    if (images.length === 0) return { hero: [], tokyo: [], kyoto: [] };
-    
+    if (images.length === 0) return {
+      hero: [],
+      tokyo: [],
+      kyoto: []
+    };
     const allUrls = images.map(img => img.file_url);
-    
+
     // Fisher-Yates shuffle with seed offset for different starting points
     const shuffleWithOffset = (arr: string[], offset: number) => {
       const shuffled = [...arr];
@@ -117,11 +106,10 @@ const HeroSection = () => {
     // Create different sets with different starting indices to avoid same image showing
     const heroSet = shuffleWithOffset(allUrls, 0);
     const tokyoSet = shuffleWithOffset(allUrls, Math.floor(allUrls.length / 3));
-    const kyotoSet = shuffleWithOffset(allUrls, Math.floor((allUrls.length * 2) / 3));
+    const kyotoSet = shuffleWithOffset(allUrls, Math.floor(allUrls.length * 2 / 3));
 
     // Ensure first images are different across all cards
     const usedFirstImages = new Set<string>();
-    
     const getUniqueFirstImage = (arr: string[]): string[] => {
       const result = [...arr];
       // Find first unused image and move it to front
@@ -136,32 +124,39 @@ const HeroSection = () => {
       }
       return result;
     };
-
     return {
       hero: getUniqueFirstImage(heroSet),
       tokyo: getUniqueFirstImage(tokyoSet),
-      kyoto: getUniqueFirstImage(kyotoSet),
+      kyoto: getUniqueFirstImage(kyotoSet)
     };
   }, [images]);
-
   const scrollToPackages = () => {
     const element = document.querySelector("#packages");
     if (element) {
-      element.scrollIntoView({ behavior: "smooth" });
+      element.scrollIntoView({
+        behavior: "smooth"
+      });
     }
   };
 
   // Get stats for display
-  const displayStats = heroStats.length > 0 
-    ? heroStats 
-    : [
-        { id: '1', label: 'Peserta Happy', value: '500+', display_order: 1 },
-        { id: '2', label: 'Trip Sukses', value: '50+', display_order: 2 },
-        { id: '3', label: 'Rating', value: '4.9★', display_order: 3 },
-      ];
-
-  return (
-    <section id="home" className="relative min-h-screen pt-20 pb-12 overflow-hidden">
+  const displayStats = heroStats.length > 0 ? heroStats : [{
+    id: '1',
+    label: 'Peserta Happy',
+    value: '500+',
+    display_order: 1
+  }, {
+    id: '2',
+    label: 'Trip Sukses',
+    value: '50+',
+    display_order: 2
+  }, {
+    id: '3',
+    label: 'Rating',
+    value: '4.9★',
+    display_order: 3
+  }];
+  return <section id="home" className="relative min-h-screen pt-20 pb-12 overflow-hidden">
       {/* Background */}
       <div className="absolute inset-0 pattern-overlay" />
 
@@ -169,15 +164,7 @@ const HeroSection = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6 mt-8">
           {/* Main Hero Card - Large */}
           <BentoCard variant="default" size="large" className="relative overflow-hidden min-h-[400px] lg:min-h-[500px] animate-fade-up" hover={true} hoverEffect="zoom">
-            {shuffledImageSets.hero.length > 0 && (
-              <DynamicImage 
-                images={shuffledImageSets.hero} 
-                interval={10000} 
-                alt="Japan destination" 
-                className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                priority
-              />
-            )}
+            {shuffledImageSets.hero.length > 0 && <DynamicImage images={shuffledImageSets.hero} interval={10000} alt="Japan destination" className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" priority />}
             <div className="absolute inset-0 bg-gradient-to-t from-card-foreground/80 via-card-foreground/20 to-transparent" />
             <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8">
               {/* Emotional Headline */}
@@ -195,9 +182,11 @@ const HeroSection = () => {
                   Lihat Trip Selanjutnya →
                 </Button>
                 <Button variant="heroOutline" size="lg" onClick={() => {
-                  const element = document.querySelector("#why-us");
-                  if (element) element.scrollIntoView({ behavior: "smooth" });
-                }}>
+                const element = document.querySelector("#why-us");
+                if (element) element.scrollIntoView({
+                  behavior: "smooth"
+                });
+              }}>
                   Kenapa Kami?
                 </Button>
               </div>
@@ -233,14 +222,7 @@ const HeroSection = () => {
 
           {/* Tokyo Preview Card */}
           <BentoCard variant="default" className="relative overflow-hidden min-h-[200px] animate-fade-up delay-200" hover={true} hoverEffect="tilt">
-            {shuffledImageSets.tokyo.length > 0 && (
-              <DynamicImage 
-                images={shuffledImageSets.tokyo} 
-                interval={13000} 
-                alt="Gallery preview" 
-                className="absolute inset-0 w-full h-full object-cover transition-all duration-700 group-hover:scale-125 group-hover:rotate-2"
-              />
-            )}
+            {shuffledImageSets.tokyo.length > 0 && <DynamicImage images={shuffledImageSets.tokyo} interval={13000} alt="Gallery preview" className="absolute inset-0 w-full h-full object-cover transition-all duration-700 group-hover:scale-125 group-hover:rotate-2" />}
             <div className="absolute inset-0 bg-gradient-to-t from-card-foreground/70 to-transparent transition-all duration-500 group-hover:from-card-foreground/90" />
             <div className="absolute bottom-0 left-0 right-0 p-4 transition-all duration-300 group-hover:translate-y-[-4px]">
               <div className="flex items-center gap-2 text-bento-cream transition-all duration-300 group-hover:gap-3">
@@ -259,14 +241,7 @@ const HeroSection = () => {
 
           {/* Kyoto Preview Card - Tall */}
           <BentoCard variant="default" size="tall" className="relative overflow-hidden min-h-[200px] animate-fade-up delay-400" hover={true} hoverEffect="float">
-            {shuffledImageSets.kyoto.length > 0 && (
-              <DynamicImage 
-                images={shuffledImageSets.kyoto} 
-                interval={16000} 
-                alt="Gallery preview" 
-                className="absolute inset-0 w-full h-full object-cover transition-all duration-700 group-hover:scale-125 group-hover:-rotate-1"
-              />
-            )}
+            {shuffledImageSets.kyoto.length > 0 && <DynamicImage images={shuffledImageSets.kyoto} interval={16000} alt="Gallery preview" className="absolute inset-0 w-full h-full object-cover transition-all duration-700 group-hover:scale-125 group-hover:-rotate-1" />}
             <div className="absolute inset-0 bg-gradient-to-t from-card-foreground/70 to-transparent transition-all duration-500 group-hover:from-card-foreground/90" />
             <div className="absolute bottom-0 left-0 right-0 p-4 transition-all duration-300 group-hover:translate-y-[-6px]">
               <div className="flex items-center gap-2 text-bento-cream mb-2 transition-all duration-300 group-hover:gap-3">
@@ -284,7 +259,7 @@ const HeroSection = () => {
               <span className="transition-all duration-300 group-hover:tracking-wider">Next Trip</span>
             </div>
             <div className="mt-4 transition-all duration-500 group-hover:scale-105 origin-left">
-              <span className="text-3xl md:text-4xl font-bold text-foreground transition-all duration-300 group-hover:text-primary group-hover:drop-shadow-lg">MAR</span>
+              <span className="text-3xl md:text-4xl font-bold text-foreground transition-all duration-300 group-hover:text-primary group-hover:drop-shadow-lg">MAY</span>
               <p className="text-lg text-foreground/90 transition-all duration-300 group-hover:text-foreground group-hover:translate-x-1">2026</p>
             </div>
             <div className="mt-4 py-2 px-3 rounded-xl bg-primary/20 text-primary text-sm font-medium inline-block transition-all duration-300 group-hover:bg-primary group-hover:text-primary-foreground group-hover:scale-105 group-hover:shadow-lg group-hover:shadow-primary/30">
@@ -312,8 +287,6 @@ const HeroSection = () => {
           </button>
         </div>
       </div>
-    </section>
-  );
+    </section>;
 };
-
 export default HeroSection;
