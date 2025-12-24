@@ -186,7 +186,7 @@ const TripLeaderAdmin = () => {
     <div className="flex-1 p-8">
       <AdminHeader 
         title="Kelola Trip Leader" 
-        description="Kelola profil trip leader yang ditampilkan di website"
+        subtitle="Kelola profil trip leader yang ditampilkan di website"
       />
 
       <div className="mb-6">

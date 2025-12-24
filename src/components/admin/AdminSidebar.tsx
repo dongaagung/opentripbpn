@@ -9,7 +9,11 @@ import {
   Users,
   LogOut,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  HelpCircle,
+  GitCompare,
+  UserCircle,
+  BarChart3
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useState } from 'react';
@@ -22,6 +26,10 @@ const menuItems = [
   { path: '/admin/testimonials', label: 'Testimoni', icon: MessageSquare },
   { path: '/admin/messages', label: 'Pesan Masuk', icon: Mail },
   { path: '/admin/users', label: 'Kelola User', icon: Users },
+  { path: '/admin/faq', label: 'FAQ', icon: HelpCircle },
+  { path: '/admin/comparison', label: 'Perbandingan', icon: GitCompare },
+  { path: '/admin/trip-leader', label: 'Trip Leader', icon: UserCircle },
+  { path: '/admin/hero-stats', label: 'Hero Stats', icon: BarChart3 },
 ];
 
 export default function AdminSidebar() {

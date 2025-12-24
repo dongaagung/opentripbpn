@@ -133,7 +133,7 @@ const FAQAdmin = () => {
     <div className="flex-1 p-8">
       <AdminHeader 
         title="Kelola FAQ" 
-        description="Kelola pertanyaan yang sering ditanyakan"
+        subtitle="Kelola pertanyaan yang sering ditanyakan"
       />
 
       <div className="mb-6">
