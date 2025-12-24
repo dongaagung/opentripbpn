@@ -1,9 +1,16 @@
+import { useState, useEffect, useMemo } from "react";
 import { ChevronDown, MapPin, Calendar, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { BentoCard } from "@/components/ui/BentoCard";
 import { useGallery } from "@/contexts/GalleryContext";
-import { openWhatsApp } from "@/lib/whatsapp";
-import { useState, useEffect, useMemo } from "react";
+import { supabase } from "@/integrations/supabase/client";
+
+interface HeroStat {
+  id: string;
+  label: string;
+  value: string;
+  display_order: number;
+}
 
 // Dynamic image component with smooth fade transition
 const DynamicImage = ({ 
@@ -67,6 +74,23 @@ const DynamicImage = ({
 
 const HeroSection = () => {
   const { images } = useGallery();
+  const [heroStats, setHeroStats] = useState<HeroStat[]>([]);
+
+  useEffect(() => {
+    const fetchHeroStats = async () => {
+      const { data, error } = await supabase
+        .from('hero_stats')
+        .select('*')
+        .eq('is_active', true)
+        .order('display_order', { ascending: true });
+
+      if (!error && data) {
+        setHeroStats(data);
+      }
+    };
+
+    fetchHeroStats();
+  }, []);
 
   // Shuffle and distribute images for each card - ensuring no duplicates across cards at the same index
   const shuffledImageSets = useMemo(() => {
@@ -127,6 +151,15 @@ const HeroSection = () => {
     }
   };
 
+  // Get stats for display
+  const displayStats = heroStats.length > 0 
+    ? heroStats 
+    : [
+        { id: '1', label: 'Peserta Happy', value: '500+', display_order: 1 },
+        { id: '2', label: 'Trip Sukses', value: '50+', display_order: 2 },
+        { id: '3', label: 'Rating', value: '4.9★', display_order: 3 },
+      ];
+
   return (
     <section id="home" className="relative min-h-screen pt-20 pb-12 overflow-hidden">
       {/* Background */}
@@ -178,14 +211,18 @@ const HeroSection = () => {
                 Dipercaya Oleh
               </span>
               <div className="mt-4 transition-all duration-500 group-hover:scale-105 origin-left">
-                <span className="text-5xl md:text-6xl font-bold transition-all duration-300 group-hover:text-primary-foreground group-hover:drop-shadow-lg">7+</span>
-                <p className="text-primary-foreground/90 mt-2 transition-all duration-300 group-hover:text-primary-foreground">Traveler sudah merasakan pengalaman kami</p>
+                <span className="text-5xl md:text-6xl font-bold transition-all duration-300 group-hover:text-primary-foreground group-hover:drop-shadow-lg">
+                  {displayStats[0]?.value || '500+'}
+                </span>
+                <p className="text-primary-foreground/90 mt-2 transition-all duration-300 group-hover:text-primary-foreground">
+                  {displayStats[0]?.label || 'Traveler'} sudah merasakan pengalaman kami
+                </p>
               </div>
             </div>
             <div className="mt-6 space-y-2">
               <div className="flex items-center gap-2 text-primary-foreground/80">
                 <span className="text-amber-300">★★★★★</span>
-                <span className="text-sm">4.9/5 rating</span>
+                <span className="text-sm">{displayStats.find(s => s.label.toLowerCase().includes('rating'))?.value || '4.9/5'} rating</span>
               </div>
               <div className="flex items-center gap-2 text-primary-foreground/80 transition-all duration-300 group-hover:text-primary-foreground group-hover:translate-x-2 group-hover:gap-3">
                 <Users className="w-5 h-5 transition-transform duration-300 group-hover:scale-125 group-hover:rotate-12" />

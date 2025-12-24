@@ -14,6 +14,48 @@ export type Database = {
   }
   public: {
     Tables: {
+      comparison_items: {
+        Row: {
+          category: string
+          created_at: string
+          display_order: number | null
+          id: string
+          is_published: boolean | null
+          other_way_description: string
+          other_way_icon: string | null
+          other_way_title: string
+          our_way_description: string
+          our_way_icon: string | null
+          our_way_title: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          display_order?: number | null
+          id?: string
+          is_published?: boolean | null
+          other_way_description: string
+          other_way_icon?: string | null
+          other_way_title: string
+          our_way_description: string
+          our_way_icon?: string | null
+          our_way_title: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          display_order?: number | null
+          id?: string
+          is_published?: boolean | null
+          other_way_description?: string
+          other_way_icon?: string | null
+          other_way_title?: string
+          our_way_description?: string
+          our_way_icon?: string | null
+          our_way_title?: string
+        }
+        Relationships: []
+      }
       contact_messages: {
         Row: {
           created_at: string
@@ -41,6 +83,36 @@ export type Database = {
           message?: string
           name?: string
           phone?: string | null
+        }
+        Relationships: []
+      }
+      faqs: {
+        Row: {
+          answer: string
+          created_at: string
+          display_order: number | null
+          id: string
+          is_published: boolean | null
+          question: string
+          updated_at: string
+        }
+        Insert: {
+          answer: string
+          created_at?: string
+          display_order?: number | null
+          id?: string
+          is_published?: boolean | null
+          question: string
+          updated_at?: string
+        }
+        Update: {
+          answer?: string
+          created_at?: string
+          display_order?: number | null
+          id?: string
+          is_published?: boolean | null
+          question?: string
+          updated_at?: string
         }
         Relationships: []
       }
@@ -83,6 +155,33 @@ export type Database = {
           tags?: string[] | null
           title?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      hero_stats: {
+        Row: {
+          created_at: string
+          display_order: number | null
+          id: string
+          is_active: boolean | null
+          label: string
+          value: string
+        }
+        Insert: {
+          created_at?: string
+          display_order?: number | null
+          id?: string
+          is_active?: boolean | null
+          label: string
+          value: string
+        }
+        Update: {
+          created_at?: string
+          display_order?: number | null
+          id?: string
+          is_active?: boolean | null
+          label?: string
+          value?: string
         }
         Relationships: []
       }
@@ -146,6 +245,57 @@ export type Database = {
           rating?: number
           testimonial_text?: string
           trip_destination?: string | null
+        }
+        Relationships: []
+      }
+      trip_leaders: {
+        Row: {
+          bio: string
+          created_at: string
+          experience_years: number | null
+          id: string
+          is_active: boolean | null
+          is_primary: boolean | null
+          languages: string[] | null
+          name: string
+          philosophy: string | null
+          photo_url: string | null
+          role: string
+          specialties: string[] | null
+          trips_led: number | null
+          updated_at: string
+        }
+        Insert: {
+          bio: string
+          created_at?: string
+          experience_years?: number | null
+          id?: string
+          is_active?: boolean | null
+          is_primary?: boolean | null
+          languages?: string[] | null
+          name: string
+          philosophy?: string | null
+          photo_url?: string | null
+          role: string
+          specialties?: string[] | null
+          trips_led?: number | null
+          updated_at?: string
+        }
+        Update: {
+          bio?: string
+          created_at?: string
+          experience_years?: number | null
+          id?: string
+          is_active?: boolean | null
+          is_primary?: boolean | null
+          languages?: string[] | null
+          name?: string
+          philosophy?: string | null
+          photo_url?: string | null
+          role?: string
+          specialties?: string[] | null
+          trips_led?: number | null
+          updated_at?: string
         }
         Relationships: []
       }

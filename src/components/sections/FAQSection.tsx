@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { MessageCircleQuestion } from "lucide-react";
 import { BentoCard } from "@/components/ui/BentoCard";
 import {
@@ -6,83 +7,37 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { supabase } from "@/integrations/supabase/client";
+import { Skeleton } from "@/components/ui/skeleton";
 
-interface FAQItem {
+interface FAQ {
+  id: string;
   question: string;
   answer: string;
-  category: "safety" | "cost" | "experience" | "logistics";
+  display_order: number;
 }
 
-const faqs: FAQItem[] = [
-  {
-    question: "Aman nggak sih ikut open trip sama orang yang nggak dikenal?",
-    answer: "Sangat aman! Grup kami maksimal 8 orang, jadi kamu akan cepat kenal satu sama lain. Kebanyakan peserta kami adalah profesional muda (25-35 tahun) yang solo traveling atau bersama teman. Kami juga ada WhatsApp grup sebelum keberangkatan supaya sudah saling kenal. Plus, trip leader kami selalu standby 24/7 selama perjalanan.",
-    category: "safety",
-  },
-  {
-    question: "Saya tidak bisa bahasa Jepang, apakah akan kesulitan?",
-    answer: "Tidak perlu khawatir! Trip leader kami fasih berbahasa Jepang dan Inggris. Selain itu, di kota-kota besar Jepang, signage dan informasi sudah tersedia dalam bahasa Inggris. Kami juga menyediakan tips & phrase card bahasa Jepang dasar yang berguna.",
-    category: "logistics",
-  },
-  {
-    question: "Apakah ada biaya tambahan yang tidak tertulis?",
-    answer: "Tidak ada hidden cost! Semua biaya yang termasuk dan tidak termasuk sudah kami tulis dengan jelas di setiap paket. Yang biasanya tidak termasuk adalah: makan siang (karena kami ingin kamu bebas eksplor kuliner), tiket masuk tempat wisata tertentu, dan belanja pribadi. Estimasi pengeluaran harian juga kami berikan.",
-    category: "cost",
-  },
-  {
-    question: "Kalau saya butuh waktu sendiri untuk eksplor, bisa?",
-    answer: "Tentu! Itinerary kami dirancang dengan free time di setiap harinya. Mau eksplor sendiri, shopping, atau sekadar duduk di cafe? Silakan! Kami hanya akan mengumpulkan peserta di waktu-waktu tertentu untuk aktivitas bersama.",
-    category: "experience",
-  },
-  {
-    question: "Gimana kalau saya punya dietary restriction atau alergi?",
-    answer: "Infokan saja saat pendaftaran, dan kami akan membantu menyesuaikan. Jepang cukup ramah untuk berbagai dietary needs, termasuk halal, vegetarian, dan alergi umum. Kami akan guide kamu ke restoran yang tepat.",
-    category: "logistics",
-  },
-  {
-    question: "Apa perbedaan open trip dengan paket tour travel konvensional?",
-    answer: "Perbedaan utama ada di ukuran grup (kami max 8 vs tour bus 20-40 orang), fleksibilitas itinerary, dan gaya perjalanan. Kami menggunakan transportasi publik supaya kamu merasakan kehidupan lokal, bukan hanya naik-turun bus wisata. Pengalaman lebih personal dan intimate!",
-    category: "experience",
-  },
-  {
-    question: "Apakah harga termasuk tiket pesawat?",
-    answer: "Tergantung paket yang dipilih. Beberapa paket sudah termasuk tiket pesawat PP dari Jakarta/Surabaya, beberapa paket land arrangement only (tanpa pesawat). Cek detail di setiap paket, atau hubungi kami untuk info lebih lanjut.",
-    category: "cost",
-  },
-  {
-    question: "Bagaimana sistem pembayaran dan apakah bisa cicil?",
-    answer: "Kami menerima pembayaran via transfer bank dan bisa dicicil! Down payment 30% untuk booking slot, kemudian pelunasan 1 bulan sebelum keberangkatan. Kami juga bisa bantu dengan jadwal cicilan yang lebih fleksibel, hubungi kami untuk diskusi.",
-    category: "cost",
-  },
-];
-
-const getCategoryColor = (category: FAQItem["category"]) => {
-  switch (category) {
-    case "safety":
-      return "bg-green-500/10 text-green-600 dark:text-green-400";
-    case "cost":
-      return "bg-primary/10 text-primary";
-    case "experience":
-      return "bg-blue-500/10 text-blue-600 dark:text-blue-400";
-    case "logistics":
-      return "bg-amber-500/10 text-amber-600 dark:text-amber-400";
-  }
-};
-
-const getCategoryLabel = (category: FAQItem["category"]) => {
-  switch (category) {
-    case "safety":
-      return "Keamanan";
-    case "cost":
-      return "Biaya";
-    case "experience":
-      return "Pengalaman";
-    case "logistics":
-      return "Logistik";
-  }
-};
-
 const FAQSection = () => {
+  const [faqs, setFaqs] = useState<FAQ[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchFAQs = async () => {
+      const { data, error } = await supabase
+        .from('faqs')
+        .select('*')
+        .eq('is_published', true)
+        .order('display_order', { ascending: true });
+
+      if (!error && data) {
+        setFaqs(data);
+      }
+      setLoading(false);
+    };
+
+    fetchFAQs();
+  }, []);
+
   return (
     <section id="faq" className="py-20 relative">
       <div className="absolute inset-0 pattern-overlay opacity-50" />
@@ -107,27 +62,39 @@ const FAQSection = () => {
           {/* Main FAQ Accordion */}
           <div className="lg:col-span-2">
             <BentoCard variant="default" className="p-6">
-              <Accordion type="single" collapsible className="space-y-4">
-                {faqs.map((faq, idx) => (
-                  <AccordionItem 
-                    key={idx} 
-                    value={`faq-${idx}`}
-                    className="border border-border rounded-xl px-4 data-[state=open]:bg-muted/30 transition-colors"
-                  >
-                    <AccordionTrigger className="hover:no-underline py-4">
-                      <div className="flex items-start gap-3 text-left">
-                        <span className={`shrink-0 px-2 py-1 rounded-lg text-xs font-medium ${getCategoryColor(faq.category)}`}>
-                          {getCategoryLabel(faq.category)}
-                        </span>
-                        <span className="font-semibold text-foreground">{faq.question}</span>
-                      </div>
-                    </AccordionTrigger>
-                    <AccordionContent className="pt-2 pb-4 pl-[76px] text-muted-foreground">
-                      {faq.answer}
-                    </AccordionContent>
-                  </AccordionItem>
-                ))}
-              </Accordion>
+              {loading ? (
+                <div className="space-y-4">
+                  {[1, 2, 3, 4].map((i) => (
+                    <Skeleton key={i} className="h-16 w-full rounded-xl" />
+                  ))}
+                </div>
+              ) : faqs.length === 0 ? (
+                <p className="text-center text-muted-foreground py-8">
+                  Belum ada FAQ tersedia.
+                </p>
+              ) : (
+                <Accordion type="single" collapsible className="space-y-4">
+                  {faqs.map((faq, idx) => (
+                    <AccordionItem 
+                      key={faq.id} 
+                      value={`faq-${idx}`}
+                      className="border border-border rounded-xl px-4 data-[state=open]:bg-muted/30 transition-colors"
+                    >
+                      <AccordionTrigger className="hover:no-underline py-4">
+                        <div className="flex items-start gap-3 text-left">
+                          <span className="shrink-0 px-2 py-1 rounded-lg text-xs font-medium bg-primary/10 text-primary">
+                            Q{idx + 1}
+                          </span>
+                          <span className="font-semibold text-foreground">{faq.question}</span>
+                        </div>
+                      </AccordionTrigger>
+                      <AccordionContent className="pt-2 pb-4 pl-[52px] text-muted-foreground">
+                        {faq.answer}
+                      </AccordionContent>
+                    </AccordionItem>
+                  ))}
+                </Accordion>
+              )}
             </BentoCard>
           </div>
 
