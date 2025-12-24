@@ -287,9 +287,8 @@ export function PackageDetailDialog({
             <div className="bg-green-500/10 rounded-xl p-4 text-sm">
               <p className="font-semibold text-green-700 dark:text-green-400 mb-2">💳 Sistem Pembayaran</p>
               <ul className="space-y-1 text-muted-foreground">
-                <li>• DP 30% untuk booking slot</li>
-                <li>• Pelunasan 1 bulan sebelum keberangkatan</li>
-                <li>• Bisa cicil (hubungi kami untuk info)</li>
+                <li>• DP 30% untuk booking slot - DP hangus jika cancel</li>
+                <li>• Pelunasan 3 bulan sebelum keberangkatan</li>
               </ul>
             </div>
           </div>
