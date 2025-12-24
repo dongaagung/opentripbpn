@@ -169,9 +169,8 @@ export function PackageDetailDialog({
               </div>
               <Button
                 onClick={handleDownloadPdf}
-                variant="outline"
                 size="sm"
-                className="gap-2 shrink-0"
+                className="gap-2 shrink-0 bg-primary text-primary-foreground hover:bg-primary/90"
                 disabled={isGeneratingPdf}
               >
                 {isGeneratingPdf ? (
