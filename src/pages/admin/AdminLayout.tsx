@@ -3,16 +3,26 @@ import { Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import AdminSidebar from '@/components/admin/AdminSidebar';
 import { Loader2 } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 export default function AdminLayout() {
   const { user, isAdmin, loading } = useAuth();
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   useEffect(() => {
     if (!loading && !user) {
       navigate('/auth');
+    } else if (!loading && user && !isAdmin) {
+      // Redirect non-admin users to home page
+      navigate('/');
+      toast({
+        title: 'Akses Ditolak',
+        description: 'Anda tidak memiliki akses admin',
+        variant: 'destructive',
+      });
     }
-  }, [user, loading, navigate]);
+  }, [user, isAdmin, loading, navigate, toast]);
 
   if (loading) {
     return (
