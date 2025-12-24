@@ -132,7 +132,7 @@ const HeroStatsAdmin = () => {
     <div className="flex-1 p-8">
       <AdminHeader 
         title="Kelola Hero Stats" 
-        description="Kelola statistik yang ditampilkan di hero section"
+        subtitle="Kelola statistik yang ditampilkan di hero section"
       />
 
       <div className="mb-6">

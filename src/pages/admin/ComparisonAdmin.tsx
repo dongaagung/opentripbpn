@@ -164,7 +164,7 @@ const ComparisonAdmin = () => {
     <div className="flex-1 p-8">
       <AdminHeader 
         title="Kelola Perbandingan" 
-        description="Kelola kartu perbandingan di section Kenapa Kami"
+        subtitle="Kelola kartu perbandingan di section Kenapa Kami"
       />
 
       <div className="mb-6">

@@ -15,6 +15,10 @@ import GalleryAdmin from "./pages/admin/GalleryAdmin";
 import TestimonialsAdmin from "./pages/admin/TestimonialsAdmin";
 import MessagesAdmin from "./pages/admin/MessagesAdmin";
 import UsersAdmin from "./pages/admin/UsersAdmin";
+import FAQAdmin from "./pages/admin/FAQAdmin";
+import ComparisonAdmin from "./pages/admin/ComparisonAdmin";
+import TripLeaderAdmin from "./pages/admin/TripLeaderAdmin";
+import HeroStatsAdmin from "./pages/admin/HeroStatsAdmin";
 
 const queryClient = new QueryClient();
 
@@ -36,6 +40,10 @@ const App = () => (
               <Route path="testimonials" element={<TestimonialsAdmin />} />
               <Route path="messages" element={<MessagesAdmin />} />
               <Route path="users" element={<UsersAdmin />} />
+              <Route path="faq" element={<FAQAdmin />} />
+              <Route path="comparison" element={<ComparisonAdmin />} />
+              <Route path="trip-leader" element={<TripLeaderAdmin />} />
+              <Route path="hero-stats" element={<HeroStatsAdmin />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
