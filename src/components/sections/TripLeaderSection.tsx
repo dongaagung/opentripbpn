@@ -1,9 +1,73 @@
-import { MapPin, Languages, Heart, Award } from "lucide-react";
+import { useState, useEffect } from "react";
+import { MapPin, Languages, Heart, Award, Globe } from "lucide-react";
 import { BentoCard } from "@/components/ui/BentoCard";
 import { useGallery } from "@/contexts/GalleryContext";
+import { supabase } from "@/integrations/supabase/client";
+import { Skeleton } from "@/components/ui/skeleton";
+
+interface TripLeader {
+  id: string;
+  name: string;
+  role: string;
+  bio: string;
+  photo_url: string | null;
+  experience_years: number;
+  trips_led: number;
+  languages: string[];
+  specialties: string[];
+  philosophy: string | null;
+}
 
 const TripLeaderSection = () => {
   const { getImage } = useGallery();
+  const [leader, setLeader] = useState<TripLeader | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchLeader = async () => {
+      const { data, error } = await supabase
+        .from('trip_leaders')
+        .select('*')
+        .eq('is_active', true)
+        .eq('is_primary', true)
+        .maybeSingle();
+
+      if (!error && data) {
+        setLeader(data);
+      }
+      setLoading(false);
+    };
+
+    fetchLeader();
+  }, []);
+
+  if (loading) {
+    return (
+      <section id="trip-leader" className="py-20 relative">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-12">
+            <Skeleton className="h-4 w-24 mx-auto mb-3" />
+            <Skeleton className="h-12 w-96 mx-auto mb-4" />
+            <Skeleton className="h-6 w-80 mx-auto" />
+          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 max-w-6xl mx-auto">
+            <Skeleton className="h-[400px] lg:col-span-2 rounded-xl" />
+            <div className="lg:col-span-3 space-y-6">
+              <Skeleton className="h-48 rounded-xl" />
+              <div className="grid grid-cols-2 gap-4">
+                <Skeleton className="h-28 rounded-xl" />
+                <Skeleton className="h-28 rounded-xl" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  if (!leader) {
+    return null;
+  }
 
   return (
     <section id="trip-leader" className="py-20 relative">
@@ -32,14 +96,14 @@ const TripLeaderSection = () => {
             hoverEffect="tilt"
           >
             <img
-              src={getImage(2) || '/placeholder.svg'}
-              alt="Trip Leader"
+              src={leader.photo_url || getImage(2) || '/placeholder.svg'}
+              alt={leader.name}
               className="absolute inset-0 w-full h-full object-cover"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-card-foreground/80 via-transparent to-transparent" />
             <div className="absolute bottom-0 left-0 right-0 p-6">
-              <h3 className="text-2xl font-bold text-bento-cream">Your Trip Leader</h3>
-              <p className="text-bento-cream/80">Founder opentrip.bpn</p>
+              <h3 className="text-2xl font-bold text-bento-cream">{leader.name}</h3>
+              <p className="text-bento-cream/80">{leader.role}</p>
             </div>
           </BentoCard>
 
@@ -49,16 +113,14 @@ const TripLeaderSection = () => {
             <BentoCard variant="glass" className="p-6" hoverEffect="lift">
               <h4 className="font-bold text-xl text-foreground mb-4">Tentang Saya</h4>
               <div className="space-y-4 text-muted-foreground">
-                <p>
-                  Halo! Saya adalah traveler yang jatuh cinta dengan Jepang sejak perjalanan pertama di 2018. 
-                  Setelah berkunjung lebih dari 5 kali dan menjelajahi berbagai prefektur, 
-                  saya ingin berbagi pengalaman ini dengan teman-teman yang punya mimpi serupa.
-                </p>
-                <p>
-                  Filosofi saya sederhana: <span className="font-semibold text-foreground">
-                  "Traveling bukan tentang checklist destinasi, tapi tentang memori dan koneksi yang kita bangun."
-                  </span>
-                </p>
+                <p>{leader.bio}</p>
+                {leader.philosophy && (
+                  <p>
+                    <span className="font-semibold text-foreground italic">
+                      "{leader.philosophy}"
+                    </span>
+                  </p>
+                )}
               </div>
             </BentoCard>
 
@@ -69,8 +131,8 @@ const TripLeaderSection = () => {
                   <MapPin className="w-5 h-5 text-primary-foreground" />
                   <span className="text-sm text-primary-foreground/80">Pengalaman</span>
                 </div>
-                <p className="text-3xl font-bold text-primary-foreground">5+</p>
-                <p className="text-sm text-primary-foreground/70">kunjungan ke Jepang</p>
+                <p className="text-3xl font-bold text-primary-foreground">{leader.experience_years}+</p>
+                <p className="text-sm text-primary-foreground/70">tahun traveling ke Jepang</p>
               </BentoCard>
 
               <BentoCard variant="teal" className="p-5" hoverEffect="pulse">
@@ -78,32 +140,36 @@ const TripLeaderSection = () => {
                   <Languages className="w-5 h-5 text-bento-cream" />
                   <span className="text-sm text-bento-cream/80">Bahasa</span>
                 </div>
-                <p className="text-3xl font-bold text-bento-cream">3</p>
-                <p className="text-sm text-bento-cream/70">Indonesia, English, 日本語</p>
+                <p className="text-3xl font-bold text-bento-cream">{leader.languages.length}</p>
+                <p className="text-sm text-bento-cream/70">{leader.languages.join(', ')}</p>
               </BentoCard>
             </div>
 
-            {/* Why Me Card */}
-            <BentoCard variant="default" className="p-6" hoverEffect="glow">
-              <h4 className="font-bold text-lg text-foreground mb-4 flex items-center gap-2">
-                <Award className="w-5 h-5 text-primary" />
-                Kenapa Traveling Bersama Saya?
-              </h4>
-              <ul className="space-y-3">
-                {[
-                  "Saya ikut dalam perjalanan, bukan hanya mengatur dari jauh",
-                  "Berbagi hidden gems yang tidak ada di guidebook",
-                  "Fleksibel menyesuaikan dengan mood dan preferensi grup",
-                  "Available 24/7 selama trip untuk bantuan apapun",
-                  "Sudah punya network lokal: restoran, toko, dan tempat unik",
-                ].map((item, idx) => (
-                  <li key={idx} className="flex items-start gap-3 text-muted-foreground">
-                    <Heart className="w-4 h-4 text-primary mt-1 shrink-0" />
-                    <span>{item}</span>
-                  </li>
-                ))}
-              </ul>
-            </BentoCard>
+            {/* Specialties Card */}
+            {leader.specialties.length > 0 && (
+              <BentoCard variant="default" className="p-6" hoverEffect="glow">
+                <h4 className="font-bold text-lg text-foreground mb-4 flex items-center gap-2">
+                  <Award className="w-5 h-5 text-primary" />
+                  Spesialisasi Saya
+                </h4>
+                <div className="flex flex-wrap gap-2">
+                  {leader.specialties.map((specialty, idx) => (
+                    <span 
+                      key={idx}
+                      className="px-3 py-1 rounded-full text-sm bg-primary/10 text-primary font-medium"
+                    >
+                      {specialty}
+                    </span>
+                  ))}
+                </div>
+                <div className="mt-4 pt-4 border-t border-border">
+                  <p className="text-sm text-muted-foreground flex items-center gap-2">
+                    <Globe className="w-4 h-4" />
+                    Sudah memimpin {leader.trips_led}+ trip ke Jepang
+                  </p>
+                </div>
+              </BentoCard>
+            )}
           </div>
         </div>
 

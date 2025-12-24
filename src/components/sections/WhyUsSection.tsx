@@ -1,53 +1,64 @@
-import { Users, MapPin, Camera, Heart, Clock, Wallet, User, Compass } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Users, MapPin, Camera, Heart, Clock, Wallet, User, Compass, Train, Bus, Coffee, Briefcase, Shuffle, Lock, X, Check } from "lucide-react";
 import { BentoCard } from "@/components/ui/BentoCard";
+import { supabase } from "@/integrations/supabase/client";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface ComparisonItem {
-  aspect: string;
-  ourWay: string;
-  oldWay: string;
-  icon: React.ReactNode;
+  id: string;
+  category: string;
+  our_way_title: string;
+  our_way_description: string;
+  our_way_icon: string;
+  other_way_title: string;
+  other_way_description: string;
+  other_way_icon: string;
+  display_order: number;
 }
 
-const comparisons: ComparisonItem[] = [
-  {
-    aspect: "Pengalaman",
-    ourWay: "Jalan kaki eksplor hidden gems, kuliner lokal, interaksi dengan warga",
-    oldWay: "Turun dari bus → foto → naik bus → repeat",
-    icon: <Compass className="w-6 h-6" />,
-  },
-  {
-    aspect: "Ukuran Grup",
-    ourWay: "Maksimal 8 orang, intimate & fleksibel",
-    oldWay: "20-40 orang per bus, tidak personal",
-    icon: <Users className="w-6 h-6" />,
-  },
-  {
-    aspect: "Itinerary",
-    ourWay: "Fleksibel, bisa request tambahan destinasi",
-    oldWay: "Fixed, tidak bisa diubah",
-    icon: <MapPin className="w-6 h-6" />,
-  },
-  {
-    aspect: "Transportasi",
-    ourWay: "Public transport + walking = authentic experience",
-    oldWay: "Private bus, tidak merasakan kehidupan lokal",
-    icon: <Clock className="w-6 h-6" />,
-  },
-  {
-    aspect: "Hidden Cost",
-    ourWay: "Transparan, semua tertera jelas",
-    oldWay: "Banyak biaya tambahan mendadak",
-    icon: <Wallet className="w-6 h-6" />,
-  },
-  {
-    aspect: "Trip Leader",
-    ourWay: "Ikut serta, berbagi cerita & tips",
-    oldWay: "Tour guide formal, baca script",
-    icon: <User className="w-6 h-6" />,
-  },
-];
+const iconMap: Record<string, React.ReactNode> = {
+  heart: <Heart className="w-6 h-6" />,
+  users: <Users className="w-6 h-6" />,
+  train: <Train className="w-6 h-6" />,
+  bus: <Bus className="w-6 h-6" />,
+  coffee: <Coffee className="w-6 h-6" />,
+  clock: <Clock className="w-6 h-6" />,
+  briefcase: <Briefcase className="w-6 h-6" />,
+  shuffle: <Shuffle className="w-6 h-6" />,
+  lock: <Lock className="w-6 h-6" />,
+  compass: <Compass className="w-6 h-6" />,
+  mappin: <MapPin className="w-6 h-6" />,
+  wallet: <Wallet className="w-6 h-6" />,
+  user: <User className="w-6 h-6" />,
+  check: <Check className="w-6 h-6" />,
+  x: <X className="w-6 h-6" />,
+};
 
 const WhyUsSection = () => {
+  const [comparisons, setComparisons] = useState<ComparisonItem[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchComparisons = async () => {
+      const { data, error } = await supabase
+        .from('comparison_items')
+        .select('*')
+        .eq('is_published', true)
+        .order('display_order', { ascending: true });
+
+      if (!error && data) {
+        setComparisons(data);
+      }
+      setLoading(false);
+    };
+
+    fetchComparisons();
+  }, []);
+
+  const getIcon = (iconName: string) => {
+    return iconMap[iconName.toLowerCase()] || <Compass className="w-6 h-6" />;
+  };
+
   return (
     <section id="why-us" className="py-20 relative">
       <div className="absolute inset-0 pattern-overlay opacity-50" />
@@ -130,34 +141,47 @@ const WhyUsSection = () => {
           <h3 className="text-2xl font-bold text-center text-foreground mb-8">
             Perbedaan yang <span className="text-primary">Terasa</span>
           </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {comparisons.map((item, idx) => (
-              <BentoCard key={idx} variant="glass" className="p-6" hoverEffect="lift">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="p-2 rounded-lg bg-primary/10 text-primary">
-                    {item.icon}
+          
+          {loading ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {[1, 2, 3, 4, 5, 6].map((i) => (
+                <Skeleton key={i} className="h-64 w-full rounded-xl" />
+              ))}
+            </div>
+          ) : comparisons.length === 0 ? (
+            <p className="text-center text-muted-foreground py-8">
+              Data perbandingan belum tersedia.
+            </p>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {comparisons.map((item) => (
+                <BentoCard key={item.id} variant="glass" className="p-6" hoverEffect="lift">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="p-2 rounded-lg bg-primary/10 text-primary">
+                      {getIcon(item.our_way_icon)}
+                    </div>
+                    <h4 className="font-bold text-foreground">{item.category}</h4>
                   </div>
-                  <h4 className="font-bold text-foreground">{item.aspect}</h4>
-                </div>
-                
-                {/* Our Way */}
-                <div className="mb-4 p-4 rounded-xl bg-primary/10 border border-primary/20">
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="text-xs font-bold uppercase tracking-wider text-primary">🚶 Cara Kami</span>
+                  
+                  {/* Our Way */}
+                  <div className="mb-4 p-4 rounded-xl bg-primary/10 border border-primary/20">
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="text-xs font-bold uppercase tracking-wider text-primary">🚶 {item.our_way_title}</span>
+                    </div>
+                    <p className="text-sm text-foreground">{item.our_way_description}</p>
                   </div>
-                  <p className="text-sm text-foreground">{item.ourWay}</p>
-                </div>
-                
-                {/* Old Way */}
-                <div className="p-4 rounded-xl bg-muted/30 border border-border">
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">🚌 Cara Lama</span>
+                  
+                  {/* Old Way */}
+                  <div className="p-4 rounded-xl bg-muted/30 border border-border">
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">🚌 {item.other_way_title}</span>
+                    </div>
+                    <p className="text-sm text-muted-foreground">{item.other_way_description}</p>
                   </div>
-                  <p className="text-sm text-muted-foreground">{item.oldWay}</p>
-                </div>
-              </BentoCard>
-            ))}
-          </div>
+                </BentoCard>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Bottom Quote */}
