@@ -3,9 +3,12 @@ import Navbar from "@/components/layout/Navbar";
 import WhatsAppFloat from "@/components/layout/WhatsAppFloat";
 import Footer from "@/components/layout/Footer";
 import HeroSection from "@/components/sections/HeroSection";
+import WhyUsSection from "@/components/sections/WhyUsSection";
 import PackagesSection from "@/components/sections/PackagesSection";
 import GallerySection from "@/components/sections/GallerySection";
+import TripLeaderSection from "@/components/sections/TripLeaderSection";
 import TestimonialsSection from "@/components/sections/TestimonialsSection";
+import FAQSection from "@/components/sections/FAQSection";
 import ContactSection from "@/components/sections/ContactSection";
 import { GalleryProvider, useGallery } from "@/contexts/GalleryContext";
 
@@ -13,19 +16,19 @@ const IndexContent = () => {
   const { hasImages, isLoading } = useGallery();
 
   useEffect(() => {
-    document.title = "opentrip.bpn - Open Trip Jepang | Explore Japan with Us";
+    document.title = "opentrip.bpn - Open Trip Jepang | Jepang yang Sesungguhnya";
     
     const metaDescription = document.querySelector('meta[name="description"]');
     if (metaDescription) {
       metaDescription.setAttribute(
         "content",
-        "opentrip.bpn - Spesialis open trip ke Jepang dari Balikpapan. Paket perjalanan Tokyo, Kyoto, Osaka, Hokkaido dengan itinerary menarik dan harga terjangkau."
+        "opentrip.bpn - Open trip ke Jepang dengan pengalaman autentik. Eksplor hidden gems, kuliner lokal, dan rasakan Jepang seperti penduduk lokal. Grup kecil max 8 orang."
       );
     } else {
       const meta = document.createElement("meta");
       meta.name = "description";
       meta.content =
-        "opentrip.bpn - Spesialis open trip ke Jepang dari Balikpapan. Paket perjalanan Tokyo, Kyoto, Osaka, Hokkaido dengan itinerary menarik dan harga terjangkau.";
+        "opentrip.bpn - Open trip ke Jepang dengan pengalaman autentik. Eksplor hidden gems, kuliner lokal, dan rasakan Jepang seperti penduduk lokal. Grup kecil max 8 orang.";
       document.head.appendChild(meta);
     }
   }, []);
@@ -67,13 +70,16 @@ const IndexContent = () => {
       <Navbar />
       <main className="relative z-10">
         <HeroSection />
+        <WhyUsSection />
         <div className="sakura-float">
           <PackagesSection />
         </div>
+        <TripLeaderSection />
         <GallerySection />
         <div className="asanoha-pattern">
           <TestimonialsSection />
         </div>
+        <FAQSection />
         <div className="kanagawa-wave">
           <ContactSection />
         </div>

@@ -147,39 +147,50 @@ const HeroSection = () => {
             )}
             <div className="absolute inset-0 bg-gradient-to-t from-card-foreground/80 via-card-foreground/20 to-transparent" />
             <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8">
+              {/* Emotional Headline */}
               <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-bento-cream mb-3 leading-tight">
-                Jelajahi
+                Jepang yang <span className="text-primary-foreground">Sesungguhnya.</span>
                 <br />
-                <span className="text-primary-foreground">Keindahan Jepang</span>
+                <span className="text-xl md:text-2xl lg:text-3xl font-normal text-bento-cream/90">Bukan yang di Brosur.</span>
               </h1>
               <p className="text-bento-cream/90 text-base md:text-lg mb-6 max-w-md">
-                Open trip eksklusif dengan pengalaman tak terlupakan bersama opentrip.bpn
+                Eksplor hidden gems, kuliner lokal, dan pengalaman autentik bersama grup kecil yang intimate.
               </p>
+              {/* Soft CTA */}
               <div className="flex flex-wrap gap-3">
                 <Button variant="bento" size="lg" onClick={scrollToPackages}>
-                  Lihat Paket Trip
+                  Lihat Trip Selanjutnya →
                 </Button>
-                <Button variant="heroOutline" size="lg" onClick={() => openWhatsApp()}>
-                  Hubungi Kami
+                <Button variant="heroOutline" size="lg" onClick={() => {
+                  const element = document.querySelector("#why-us");
+                  if (element) element.scrollIntoView({ behavior: "smooth" });
+                }}>
+                  Kenapa Kami?
                 </Button>
               </div>
             </div>
           </BentoCard>
 
-          {/* Stats Card - Red Accent */}
+          {/* Social Proof Card - Red Accent */}
           <BentoCard variant="red" className="flex flex-col justify-between animate-fade-up delay-100" hoverEffect="lift">
             <div className="transition-all duration-300 group-hover:translate-x-1">
               <span className="text-xs font-medium text-primary-foreground/70 uppercase tracking-wider transition-all duration-300 group-hover:text-primary-foreground group-hover:tracking-widest">
-                Pengalaman
+                Dipercaya Oleh
               </span>
               <div className="mt-4 transition-all duration-500 group-hover:scale-105 origin-left">
-                <span className="text-5xl md:text-6xl font-bold transition-all duration-300 group-hover:text-primary-foreground group-hover:drop-shadow-lg">2+</span>
-                <p className="text-primary-foreground/90 mt-2 transition-all duration-300 group-hover:text-primary-foreground">Trip telah dilaksanakan (2026 akan ada 3-4 Trip)</p>
+                <span className="text-5xl md:text-6xl font-bold transition-all duration-300 group-hover:text-primary-foreground group-hover:drop-shadow-lg">7+</span>
+                <p className="text-primary-foreground/90 mt-2 transition-all duration-300 group-hover:text-primary-foreground">Traveler sudah merasakan pengalaman kami</p>
               </div>
             </div>
-            <div className="mt-6 flex items-center gap-2 text-primary-foreground/80 transition-all duration-300 group-hover:text-primary-foreground group-hover:translate-x-2 group-hover:gap-3">
-              <Users className="w-5 h-5 transition-transform duration-300 group-hover:scale-125 group-hover:rotate-12" />
-              <span className="text-sm transition-all duration-300 group-hover:font-medium">7+ peserta puas</span>
+            <div className="mt-6 space-y-2">
+              <div className="flex items-center gap-2 text-primary-foreground/80">
+                <span className="text-amber-300">★★★★★</span>
+                <span className="text-sm">4.9/5 rating</span>
+              </div>
+              <div className="flex items-center gap-2 text-primary-foreground/80 transition-all duration-300 group-hover:text-primary-foreground group-hover:translate-x-2 group-hover:gap-3">
+                <Users className="w-5 h-5 transition-transform duration-300 group-hover:scale-125 group-hover:rotate-12" />
+                <span className="text-sm transition-all duration-300 group-hover:font-medium">100% ingin ikut lagi</span>
+              </div>
             </div>
           </BentoCard>
 

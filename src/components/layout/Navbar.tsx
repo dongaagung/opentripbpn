@@ -18,9 +18,11 @@ const Navbar = () => {
 
   const navLinks = [
     { href: "#home", label: "Home" },
+    { href: "#why-us", label: "Kenapa Kami?" },
     { href: "#packages", label: "Paket Trip" },
     { href: "#gallery", label: "Galeri" },
     { href: "#testimonials", label: "Testimoni" },
+    { href: "#faq", label: "FAQ" },
     { href: "#contact", label: "Kontak" },
   ];
 

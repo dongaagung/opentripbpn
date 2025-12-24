@@ -228,10 +228,7 @@ export function PackageDetailDialog({
                       </h3>
                       <ul className="space-y-2">
                         {pkg.inclusions.map((item, idx) => (
-                          <li
-                            key={idx}
-                            className="text-sm text-muted-foreground flex items-start gap-2"
-                          >
+                          <li key={idx} className="text-sm text-muted-foreground flex items-start gap-2">
                             <CheckCircle2 className="w-4 h-4 text-green-500 mt-0.5 shrink-0" />
                             {item}
                           </li>
@@ -247,10 +244,7 @@ export function PackageDetailDialog({
                       </h3>
                       <ul className="space-y-2">
                         {pkg.exclusions.map((item, idx) => (
-                          <li
-                            key={idx}
-                            className="text-sm text-muted-foreground flex items-start gap-2"
-                          >
+                          <li key={idx} className="text-sm text-muted-foreground flex items-start gap-2">
                             <XCircle className="w-4 h-4 text-red-500 mt-0.5 shrink-0" />
                             {item}
                           </li>
@@ -261,6 +255,47 @@ export function PackageDetailDialog({
                 </div>
               </>
             )}
+
+            {/* Transparent Pricing */}
+            <Separator />
+            <div className="bg-muted/30 rounded-xl p-6">
+              <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2">
+                💰 Breakdown Harga (Transparan)
+              </h3>
+              <div className="space-y-3">
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Harga Paket</span>
+                  <span className="font-medium text-foreground">{formatPrice(pkg.price)}</span>
+                </div>
+                <Separator />
+                <div className="text-sm text-muted-foreground space-y-2">
+                  <p className="font-medium text-foreground">Estimasi Pengeluaran Tambahan:</p>
+                  <div className="grid grid-cols-2 gap-2 text-xs">
+                    <span>• Makan siang/malam</span>
+                    <span className="text-right">~¥1,500-2,500/meal</span>
+                    <span>• Tiket masuk wisata</span>
+                    <span className="text-right">~¥500-1,500</span>
+                    <span>• Transportasi lokal ekstra</span>
+                    <span className="text-right">~¥500-1,000/hari</span>
+                    <span>• Belanja/Souvenir</span>
+                    <span className="text-right">Sesuai budget</span>
+                  </div>
+                </div>
+                <div className="mt-4 p-3 bg-primary/10 rounded-lg text-sm text-primary">
+                  <strong>💡 Tips:</strong> Siapkan budget ~¥5,000-10,000/hari untuk pengeluaran pribadi
+                </div>
+              </div>
+            </div>
+
+            {/* Payment Info */}
+            <div className="bg-green-500/10 rounded-xl p-4 text-sm">
+              <p className="font-semibold text-green-700 dark:text-green-400 mb-2">💳 Sistem Pembayaran</p>
+              <ul className="space-y-1 text-muted-foreground">
+                <li>• DP 30% untuk booking slot</li>
+                <li>• Pelunasan 1 bulan sebelum keberangkatan</li>
+                <li>• Bisa cicil (hubungi kami untuk info)</li>
+              </ul>
+            </div>
           </div>
         </ScrollArea>
 
@@ -269,9 +304,10 @@ export function PackageDetailDialog({
           <div>
             <span className="text-muted-foreground text-sm">Mulai dari</span>
             <p className="text-2xl font-bold text-primary">{formatPrice(pkg.price)}</p>
+            <span className="text-xs text-muted-foreground">*tanpa hidden cost</span>
           </div>
           <Button onClick={bookNow} size="lg" className="gap-2">
-            Book Now
+            Tanya Detail
             <ArrowRight className="w-4 h-4" />
           </Button>
         </div>
