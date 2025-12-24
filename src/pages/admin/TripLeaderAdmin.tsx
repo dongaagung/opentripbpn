@@ -16,8 +16,7 @@ interface TripLeader {
   role: string;
   bio: string;
   photo_url: string | null;
-  experience_years: number;
-  trips_led: number;
+  visited_cities: string[];
   languages: string[];
   specialties: string[];
   philosophy: string | null;
@@ -40,8 +39,7 @@ const TripLeaderAdmin = () => {
     role: '',
     bio: '',
     photo_url: '',
-    experience_years: 0,
-    trips_led: 0,
+    visited_cities: '',
     languages: '',
     specialties: '',
     philosophy: '',
@@ -72,8 +70,7 @@ const TripLeaderAdmin = () => {
       role: '',
       bio: '',
       photo_url: '',
-      experience_years: 0,
-      trips_led: 0,
+      visited_cities: '',
       languages: '',
       specialties: '',
       philosophy: '',
@@ -89,8 +86,9 @@ const TripLeaderAdmin = () => {
         ...leader,
         photo_url: leader.photo_url || '',
         philosophy: leader.philosophy || '',
-        languages: leader.languages.join(', '),
-        specialties: leader.specialties.join(', '),
+        visited_cities: leader.visited_cities?.join(', ') || '',
+        languages: leader.languages?.join(', ') || '',
+        specialties: leader.specialties?.join(', ') || '',
       });
       setIsEditing(true);
     } else {
@@ -133,8 +131,7 @@ const TripLeaderAdmin = () => {
       role: formData.role,
       bio: formData.bio,
       photo_url: formData.photo_url || null,
-      experience_years: formData.experience_years,
-      trips_led: formData.trips_led,
+      visited_cities: formData.visited_cities.split(',').map(s => s.trim()).filter(Boolean),
       languages: formData.languages.split(',').map(s => s.trim()).filter(Boolean),
       specialties: formData.specialties.split(',').map(s => s.trim()).filter(Boolean),
       philosophy: formData.philosophy || null,
@@ -225,11 +222,11 @@ const TripLeaderAdmin = () => {
                   )}
                 </div>
                 <p className="text-sm text-muted-foreground mb-2">{leader.role}</p>
-                <div className="flex gap-2 text-xs text-muted-foreground">
-                  <span>{leader.experience_years}+ tahun</span>
-                  <span>•</span>
-                  <span>{leader.trips_led} trips</span>
-                </div>
+                {leader.visited_cities && leader.visited_cities.length > 0 && (
+                  <div className="flex gap-2 text-xs text-muted-foreground">
+                    <span>{leader.visited_cities.length} kota dikunjungi</span>
+                  </div>
+                )}
               </div>
               <div className="flex flex-col gap-1">
                 <Button variant="ghost" size="icon" onClick={() => openDialog(leader)}>
@@ -311,23 +308,13 @@ const TripLeaderAdmin = () => {
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label>Pengalaman (tahun)</Label>
-                <Input
-                  type="number"
-                  value={formData.experience_years}
-                  onChange={(e) => setFormData({ ...formData, experience_years: parseInt(e.target.value) || 0 })}
-                />
-              </div>
-              <div>
-                <Label>Jumlah Trip</Label>
-                <Input
-                  type="number"
-                  value={formData.trips_led}
-                  onChange={(e) => setFormData({ ...formData, trips_led: parseInt(e.target.value) || 0 })}
-                />
-              </div>
+            <div>
+              <Label>Kota yang Dikunjungi di Jepang (pisahkan dengan koma)</Label>
+              <Input
+                value={formData.visited_cities}
+                onChange={(e) => setFormData({ ...formData, visited_cities: e.target.value })}
+                placeholder="Tokyo, Osaka, Kyoto, Hiroshima, Hokkaido"
+              />
             </div>
 
             <div>

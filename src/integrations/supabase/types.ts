@@ -252,7 +252,6 @@ export type Database = {
         Row: {
           bio: string
           created_at: string
-          experience_years: number | null
           id: string
           is_active: boolean | null
           is_primary: boolean | null
@@ -262,13 +261,12 @@ export type Database = {
           photo_url: string | null
           role: string
           specialties: string[] | null
-          trips_led: number | null
           updated_at: string
+          visited_cities: string[] | null
         }
         Insert: {
           bio: string
           created_at?: string
-          experience_years?: number | null
           id?: string
           is_active?: boolean | null
           is_primary?: boolean | null
@@ -278,13 +276,12 @@ export type Database = {
           photo_url?: string | null
           role: string
           specialties?: string[] | null
-          trips_led?: number | null
           updated_at?: string
+          visited_cities?: string[] | null
         }
         Update: {
           bio?: string
           created_at?: string
-          experience_years?: number | null
           id?: string
           is_active?: boolean | null
           is_primary?: boolean | null
@@ -294,8 +291,8 @@ export type Database = {
           photo_url?: string | null
           role?: string
           specialties?: string[] | null
-          trips_led?: number | null
           updated_at?: string
+          visited_cities?: string[] | null
         }
         Relationships: []
       }
