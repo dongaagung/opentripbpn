@@ -17,6 +17,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
@@ -112,23 +113,48 @@ export function PackageDetailDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-3xl max-h-[90vh] p-0 overflow-hidden">
+        <DialogHeader className="sr-only">
+          <DialogTitle>{pkg.title}</DialogTitle>
+          <DialogDescription>
+            Detail paket trip {pkg.title} di {pkg.destination}. Termasuk itinerary, harga, dan informasi pembayaran.
+          </DialogDescription>
+        </DialogHeader>
+
         {/* Hero Image */}
         <div className="relative h-56 md:h-72">
           <img
             src={imageUrl}
-            alt={pkg.title}
+            alt={`Detail paket trip ${pkg.title} - ${pkg.destination}`}
             className="w-full h-full object-cover"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent" />
+
+          {/* Top actions */}
+          <div className="absolute top-4 right-4 z-10">
+            <Button
+              onClick={handleDownloadPdf}
+              variant="secondary"
+              size="icon"
+              className="border border-border bg-secondary/90 backdrop-blur hover:bg-secondary"
+              disabled={isGeneratingPdf}
+              aria-label="Download PDF paket trip"
+              title="Download PDF"
+            >
+              {isGeneratingPdf ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Download className="h-4 w-4" />
+              )}
+            </Button>
+          </div>
+
           <div className="absolute bottom-4 left-6 right-6">
             <Badge variant="secondary" className="mb-2">
               {pkg.destination}
             </Badge>
-            <DialogHeader>
-              <DialogTitle className="text-2xl md:text-3xl font-bold text-foreground">
-                {pkg.title}
-              </DialogTitle>
-            </DialogHeader>
+            <div>
+              <h2 className="text-2xl md:text-3xl font-bold text-foreground">{pkg.title}</h2>
+            </div>
           </div>
         </div>
 
@@ -321,20 +347,6 @@ export function PackageDetailDialog({
             <span className="text-xs text-muted-foreground">*tanpa hidden cost</span>
           </div>
           <div className="flex gap-2">
-            <Button 
-              onClick={handleDownloadPdf} 
-              variant="secondary" 
-              size="lg" 
-              className="gap-2 bg-secondary text-secondary-foreground border border-border hover:bg-secondary/80"
-              disabled={isGeneratingPdf}
-            >
-              {isGeneratingPdf ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <Download className="w-4 h-4" />
-              )}
-              <span className="hidden sm:inline">Download PDF</span>
-            </Button>
             <Button onClick={bookNow} size="lg" className="gap-2">
               Tanya Detail
               <ArrowRight className="w-4 h-4" />
