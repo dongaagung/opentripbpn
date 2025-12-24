@@ -272,17 +272,13 @@ export function PackageDetailDialog({
                   <p className="font-medium text-foreground">Estimasi Pengeluaran Tambahan:</p>
                   <div className="grid grid-cols-2 gap-2 text-xs">
                     <span>• Makan siang/malam</span>
-                    <span className="text-right">~¥1,500-2,500/meal</span>
-                    <span>• Tiket masuk wisata</span>
-                    <span className="text-right">~¥500-1,500</span>
-                    <span>• Transportasi lokal ekstra</span>
-                    <span className="text-right">~¥500-1,000/hari</span>
+                    <span className="text-right">~¥800-2,500/meal</span>
                     <span>• Belanja/Souvenir</span>
                     <span className="text-right">Sesuai budget</span>
                   </div>
                 </div>
                 <div className="mt-4 p-3 bg-primary/10 rounded-lg text-sm text-primary">
-                  <strong>💡 Tips:</strong> Siapkan budget ~¥5,000-10,000/hari untuk pengeluaran pribadi
+                  <strong>💡 Tips:</strong> Siapkan budget ±¥5,000 untuk pengeluaran pribadi
                 </div>
               </div>
             </div>
