@@ -129,25 +129,6 @@ export function PackageDetailDialog({
           />
           <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent" />
 
-          {/* Top actions */}
-          <div className="absolute top-4 right-4 z-10">
-            <Button
-              onClick={handleDownloadPdf}
-              variant="secondary"
-              size="icon"
-              className="border border-border bg-secondary/90 backdrop-blur hover:bg-secondary"
-              disabled={isGeneratingPdf}
-              aria-label="Download PDF paket trip"
-              title="Download PDF"
-            >
-              {isGeneratingPdf ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <Download className="h-4 w-4" />
-              )}
-            </Button>
-          </div>
-
           <div className="absolute bottom-4 left-6 right-6">
             <Badge variant="secondary" className="mb-2">
               {pkg.destination}
@@ -160,30 +141,46 @@ export function PackageDetailDialog({
 
         <ScrollArea className="max-h-[calc(90vh-18rem)]">
           <div className="p-6 space-y-6">
-            {/* Quick Info */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <Clock className="w-4 h-4 text-primary" />
-                <span className="text-sm">{pkg.duration_days} Hari</span>
+            {/* Quick Info + Download Button */}
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              <div className="flex flex-wrap gap-4">
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <Clock className="w-4 h-4 text-primary" />
+                  <span className="text-sm">{pkg.duration_days} Hari</span>
+                </div>
+                {pkg.start_date && (
+                  <div className="flex items-center gap-2 text-muted-foreground">
+                    <Calendar className="w-4 h-4 text-primary" />
+                    <span className="text-sm">{formatDate(pkg.start_date)}</span>
+                  </div>
+                )}
+                {pkg.available_seats && (
+                  <div className="flex items-center gap-2 text-muted-foreground">
+                    <Users className="w-4 h-4 text-primary" />
+                    <span className="text-sm">{pkg.available_seats} Seat</span>
+                  </div>
+                )}
+                {pkg.meeting_point && (
+                  <div className="flex items-center gap-2 text-muted-foreground">
+                    <MapPinned className="w-4 h-4 text-primary" />
+                    <span className="text-sm">{pkg.meeting_point}</span>
+                  </div>
+                )}
               </div>
-              {pkg.start_date && (
-                <div className="flex items-center gap-2 text-muted-foreground">
-                  <Calendar className="w-4 h-4 text-primary" />
-                  <span className="text-sm">{formatDate(pkg.start_date)}</span>
-                </div>
-              )}
-              {pkg.available_seats && (
-                <div className="flex items-center gap-2 text-muted-foreground">
-                  <Users className="w-4 h-4 text-primary" />
-                  <span className="text-sm">{pkg.available_seats} Seat</span>
-                </div>
-              )}
-              {pkg.meeting_point && (
-                <div className="flex items-center gap-2 text-muted-foreground">
-                  <MapPinned className="w-4 h-4 text-primary" />
-                  <span className="text-sm">{pkg.meeting_point}</span>
-                </div>
-              )}
+              <Button
+                onClick={handleDownloadPdf}
+                variant="outline"
+                size="sm"
+                className="gap-2 shrink-0"
+                disabled={isGeneratingPdf}
+              >
+                {isGeneratingPdf ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Download className="h-4 w-4" />
+                )}
+                Download PDF
+              </Button>
             </div>
 
             {/* Description */}
