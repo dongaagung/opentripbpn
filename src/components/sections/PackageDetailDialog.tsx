@@ -323,9 +323,9 @@ export function PackageDetailDialog({
           <div className="flex gap-2">
             <Button 
               onClick={handleDownloadPdf} 
-              variant="outline" 
+              variant="secondary" 
               size="lg" 
-              className="gap-2"
+              className="gap-2 bg-secondary text-secondary-foreground border border-border hover:bg-secondary/80"
               disabled={isGeneratingPdf}
             >
               {isGeneratingPdf ? (
