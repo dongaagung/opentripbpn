@@ -7,7 +7,8 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Pencil, Trash2, Loader2, Upload, Calendar, MapPin } from 'lucide-react';
+import { Plus, Pencil, Trash2, Loader2, Upload, Calendar, MapPin, Download } from 'lucide-react';
+import { generatePackagePdf } from '@/lib/generatePackagePdf';
 import {
   Dialog,
   DialogContent,
@@ -400,6 +401,14 @@ export default function PackagesAdmin() {
                     >
                       <Pencil size={16} className="mr-1" />
                       Edit
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => generatePackagePdf(pkg)}
+                      title="Download PDF"
+                    >
+                      <Download size={16} />
                     </Button>
                     <Button
                       variant="outline"
