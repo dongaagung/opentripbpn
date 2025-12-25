@@ -1,50 +1,39 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Menu, X, Plane } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import ThemeToggle from "@/components/ui/ThemeToggle";
 import { openWhatsApp } from "@/lib/whatsapp";
+import { scrollToSection as scrollTo } from "@/lib/scroll";
+
+const navLinks = [
+  { href: "#home", label: "Home" },
+  { href: "#why-us", label: "Kenapa Kami?" },
+  { href: "#packages", label: "Paket Trip" },
+  { href: "#gallery", label: "Galeri" },
+  { href: "#testimonials", label: "Testimoni" },
+  { href: "#faq", label: "FAQ" },
+  { href: "#contact", label: "Kontak" },
+] as const;
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 20);
-    };
-    window.addEventListener("scroll", handleScroll);
+    const handleScroll = () => setScrolled(window.scrollY > 20);
+    window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   // Lock body scroll when mobile menu is open
   useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
-    }
-    return () => {
-      document.body.style.overflow = '';
-    };
+    document.body.style.overflow = isOpen ? 'hidden' : '';
+    return () => { document.body.style.overflow = ''; };
   }, [isOpen]);
 
-  const navLinks = [
-    { href: "#home", label: "Home" },
-    { href: "#why-us", label: "Kenapa Kami?" },
-    { href: "#packages", label: "Paket Trip" },
-    { href: "#gallery", label: "Galeri" },
-    { href: "#testimonials", label: "Testimoni" },
-    { href: "#faq", label: "FAQ" },
-    { href: "#contact", label: "Kontak" },
-  ];
-
-  const scrollToSection = (href: string) => {
-    const element = document.querySelector(href);
-    if (element) {
-      element.scrollIntoView({ behavior: "smooth" });
-    }
-    setIsOpen(false);
-  };
+  const handleNavClick = useCallback((href: string) => {
+    scrollTo(href, () => setIsOpen(false));
+  }, []);
 
   return (
     <>
@@ -70,7 +59,7 @@ const Navbar = () => {
               href="#home"
               onClick={(e) => {
                 e.preventDefault();
-                scrollToSection("#home");
+                handleNavClick("#home");
               }}
               className="flex items-center gap-2 md:gap-3 group"
             >
@@ -91,7 +80,7 @@ const Navbar = () => {
                   href={link.href}
                   onClick={(e) => {
                     e.preventDefault();
-                    scrollToSection(link.href);
+                    handleNavClick(link.href);
                   }}
                   className="text-foreground/80 hover:text-primary font-medium transition-colors duration-300 relative after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-primary after:transition-all after:duration-300 hover:after:w-full"
                 >
@@ -146,7 +135,7 @@ const Navbar = () => {
                     href={link.href}
                     onClick={(e) => {
                       e.preventDefault();
-                      scrollToSection(link.href);
+                      handleNavClick(link.href);
                     }}
                     className="flex items-center gap-4 py-4 px-4 rounded-xl text-foreground hover:bg-primary/10 hover:text-primary font-medium transition-all duration-300 border border-transparent hover:border-primary/20"
                     style={{ 

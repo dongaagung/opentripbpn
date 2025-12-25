@@ -1,22 +1,16 @@
 import { Plane, Instagram, Video, MessageCircle } from "lucide-react";
+import { scrollToSection } from "@/lib/scroll";
+
+const quickLinks = [
+  { label: "Home", href: "#home" },
+  { label: "Paket Trip", href: "#packages" },
+  { label: "Galeri", href: "#gallery" },
+  { label: "Testimoni", href: "#testimonials" },
+  { label: "Kontak", href: "#contact" },
+] as const;
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
-
-  const quickLinks = [
-    { label: "Home", href: "#home" },
-    { label: "Paket Trip", href: "#packages" },
-    { label: "Galeri", href: "#gallery" },
-    { label: "Testimoni", href: "#testimonials" },
-    { label: "Kontak", href: "#contact" },
-  ];
-
-  const scrollToSection = (href: string) => {
-    const element = document.querySelector(href);
-    if (element) {
-      element.scrollIntoView({ behavior: "smooth" });
-    }
-  };
 
   return (
     <footer className="bg-muted/50 border-t border-border py-12">
