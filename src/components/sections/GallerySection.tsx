@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { createPortal } from "react-dom";
 import { Play, X, MapPin, ImageIcon, Sparkles } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import LazyImage from "@/components/ui/LazyImage";
 
 interface GalleryItem {
   id: string;
@@ -258,15 +259,13 @@ const GallerySection = () => {
                 onClick={() => setSelectedItem(item)}
                 style={{ transformOrigin: 'center center' }}
               >
-                {/* Image */}
-                <div className="absolute inset-0">
-                  <img
-                    src={item.thumbnail}
-                    alt={item.caption}
-                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                    loading="lazy"
-                  />
-                </div>
+                {/* Image with Lazy Loading */}
+                <LazyImage
+                  src={item.thumbnail}
+                  alt={item.caption}
+                  className="absolute inset-0 w-full h-full transition-transform duration-700 group-hover:scale-110"
+                  placeholderColor={overlayColor}
+                />
 
                 {/* Color Overlay - Always visible at bottom */}
                 <div
