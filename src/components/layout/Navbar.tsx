@@ -120,12 +120,11 @@ const Navbar = () => {
 
           {/* Mobile Navigation - Full Screen Slide */}
           <div
-            className={`md:hidden fixed left-0 right-0 bg-background/98 backdrop-blur-xl border-t border-border transition-all duration-500 ease-out ${
+            className={`md:hidden fixed left-0 right-0 bottom-0 bg-background/98 backdrop-blur-xl border-t border-border transition-all duration-500 ease-out overflow-hidden ${
               isOpen 
-                ? "top-16 bottom-0 opacity-100" 
-                : "top-16 bottom-full opacity-0 pointer-events-none"
+                ? "top-16 opacity-100 visible" 
+                : "top-full opacity-0 invisible pointer-events-none"
             }`}
-            style={{ maxHeight: isOpen ? 'calc(100vh - 4rem)' : '0' }}
           >
             <div className="container mx-auto px-4 py-6 h-full overflow-y-auto">
               <div className="space-y-2">
