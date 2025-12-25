@@ -229,25 +229,25 @@ const PackagesSection = () => {
   }
 
   return (
-    <section id="packages" className="py-20 relative">
+    <section id="packages" className="py-12 md:py-20 relative">
       <div className="absolute inset-0 pattern-overlay opacity-50" />
       
       <div className="container mx-auto px-4 relative z-10">
-        {/* Section Header */}
-        <div className="text-center mb-12">
-          <span className="text-primary font-medium text-sm uppercase tracking-wider">
+        {/* Section Header - Smaller on mobile */}
+        <div className="text-center mb-8 md:mb-12">
+          <span className="text-primary font-medium text-xs md:text-sm uppercase tracking-wider">
             Paket Perjalanan
           </span>
-          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mt-3 mb-4">
+          <h2 className="text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-bold text-foreground mt-2 md:mt-3 mb-2 md:mb-4">
             Pilih Petualangan Anda
           </h2>
-          <p className="text-muted-foreground max-w-2xl mx-auto">
+          <p className="text-muted-foreground max-w-2xl mx-auto text-sm md:text-base px-4">
             Berbagai pilihan paket trip ke Jepang dengan itinerary menarik dan harga terjangkau
           </p>
         </div>
 
-        {/* Packages Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {/* Packages Grid - 1 col mobile, 2 col tablet, 3 col desktop */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
           {packages.map((pkg, index) => (
             <PackageCard 
               key={pkg.id} 
@@ -258,16 +258,17 @@ const PackagesSection = () => {
           ))}
         </div>
 
-        {/* Bottom CTA */}
-        <div className="mt-12 text-center">
-          <BentoCard variant="teal" className="inline-flex flex-col md:flex-row items-center gap-6 px-8 py-6">
+        {/* Bottom CTA - More compact on mobile */}
+        <div className="mt-8 md:mt-12 text-center">
+          <BentoCard variant="teal" className="inline-flex flex-col md:flex-row items-center gap-3 md:gap-6 px-4 md:px-8 py-4 md:py-6">
             <div className="text-center md:text-left">
-              <p className="text-bento-cream/80 text-sm">Butuh paket custom?</p>
-              <p className="text-xl font-bold text-bento-cream">Hubungi kami untuk request khusus</p>
+              <p className="text-bento-cream/80 text-xs md:text-sm">Butuh paket custom?</p>
+              <p className="text-base md:text-xl font-bold text-bento-cream">Hubungi kami untuk request khusus</p>
             </div>
             <Button
               variant="hero"
-              size="lg"
+              size="default"
+              className="w-full md:w-auto"
               onClick={() => openWhatsApp("Halo opentrip.bpn, saya ingin request paket trip custom ke Jepang")}
             >
               Custom Trip

@@ -156,32 +156,44 @@ const HeroSection = () => {
     value: '4.9★',
     display_order: 3
   }];
-  return <section id="home" className="relative min-h-screen pt-20 pb-12 overflow-hidden">
+  return <section id="home" className="relative min-h-screen pt-20 pb-8 md:pb-12 overflow-hidden">
       {/* Background */}
       <div className="absolute inset-0 pattern-overlay" />
 
       <div className="container mx-auto px-4 relative z-10">
-        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6 mt-8">
-          {/* Main Hero Card - Large */}
-          <BentoCard variant="default" size="large" className="relative overflow-hidden min-h-[400px] lg:min-h-[500px] animate-fade-up" hover={true} hoverEffect="zoom">
+        {/* Mobile: Compact 2-column grid, Desktop: Full bento */}
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6 mt-4 md:mt-8">
+          {/* Main Hero Card - Full width on mobile */}
+          <BentoCard variant="default" size="large" className="col-span-2 md:col-span-2 lg:col-span-2 relative overflow-hidden min-h-[280px] md:min-h-[400px] lg:min-h-[500px] animate-fade-up" hover={true} hoverEffect="zoom">
             {shuffledImageSets.hero.length > 0 && <DynamicImage images={shuffledImageSets.hero} interval={10000} alt="Japan destination" className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" priority />}
-            <div className="absolute inset-0 bg-gradient-to-t from-card-foreground/80 via-card-foreground/20 to-transparent" />
-            <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8">
-              {/* Emotional Headline */}
-              <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-bento-cream mb-3 leading-tight">
+            <div className="absolute inset-0 bg-gradient-to-t from-card-foreground/90 via-card-foreground/30 to-transparent" />
+            <div className="absolute bottom-0 left-0 right-0 p-4 md:p-6 lg:p-8">
+              {/* Emotional Headline - Smaller on mobile */}
+              <h1 className="text-xl sm:text-2xl md:text-4xl lg:text-5xl font-bold text-bento-cream mb-2 md:mb-3 leading-tight">
                 Jepang yang <span className="text-primary-foreground">Sesungguhnya.</span>
-                <br />
-                <span className="text-xl md:text-2xl lg:text-3xl font-normal text-bento-cream/90">Bukan yang di Brosur.</span>
+                <br className="hidden sm:block" />
+                <span className="text-base sm:text-lg md:text-2xl lg:text-3xl font-normal text-bento-cream/90"> Bukan yang di Brosur.</span>
               </h1>
-              <p className="text-bento-cream/90 text-base md:text-lg mb-6 max-w-md">
+              <p className="text-bento-cream/90 text-xs sm:text-sm md:text-lg mb-3 md:mb-6 max-w-md line-clamp-2 md:line-clamp-none">
                 Eksplor hidden gems, kuliner lokal, dan pengalaman autentik bersama grup kecil yang intimate.
               </p>
-              {/* Soft CTA */}
-              <div className="flex flex-wrap gap-3">
-                <Button variant="bento" size="lg" onClick={scrollToPackages}>
+              {/* Soft CTA - Stack on small mobile */}
+              <div className="flex flex-col sm:flex-row gap-2 md:gap-3">
+                <Button variant="bento" size="sm" className="md:hidden" onClick={scrollToPackages}>
+                  Lihat Trip →
+                </Button>
+                <Button variant="bento" size="lg" className="hidden md:flex" onClick={scrollToPackages}>
                   Lihat Trip Selanjutnya →
                 </Button>
-                <Button variant="heroOutline" size="lg" onClick={() => {
+                <Button variant="heroOutline" size="sm" className="md:hidden" onClick={() => {
+                const element = document.querySelector("#why-us");
+                if (element) element.scrollIntoView({
+                  behavior: "smooth"
+                });
+              }}>
+                  Kenapa Kami?
+                </Button>
+                <Button variant="heroOutline" size="lg" className="hidden md:flex" onClick={() => {
                 const element = document.querySelector("#why-us");
                 if (element) element.scrollIntoView({
                   behavior: "smooth"
@@ -193,97 +205,115 @@ const HeroSection = () => {
             </div>
           </BentoCard>
 
-          {/* Social Proof Card - Red Accent */}
-          <BentoCard variant="red" className="flex flex-col justify-between animate-fade-up delay-100" hoverEffect="lift">
+          {/* Social Proof Card - Compact on mobile */}
+          <BentoCard variant="red" className="col-span-1 flex flex-col justify-between animate-fade-up delay-100 p-3 md:p-6" hoverEffect="lift">
             <div className="transition-all duration-300 group-hover:translate-x-1">
-              <span className="text-xs font-medium text-primary-foreground/70 uppercase tracking-wider transition-all duration-300 group-hover:text-primary-foreground group-hover:tracking-widest">
-                Dipercaya Oleh
+              <span className="text-[10px] md:text-xs font-medium text-primary-foreground/70 uppercase tracking-wider">
+                Dipercaya
               </span>
-              <div className="mt-4 transition-all duration-500 group-hover:scale-105 origin-left">
-                <span className="text-5xl md:text-6xl font-bold transition-all duration-300 group-hover:text-primary-foreground group-hover:drop-shadow-lg">
+              <div className="mt-2 md:mt-4">
+                <span className="text-2xl sm:text-3xl md:text-5xl lg:text-6xl font-bold">
                   {displayStats[0]?.value || '500+'}
                 </span>
-                <p className="text-primary-foreground/90 mt-2 transition-all duration-300 group-hover:text-primary-foreground">
-                  {displayStats[0]?.label || 'Traveler'} sudah merasakan pengalaman kami
+                <p className="text-primary-foreground/90 mt-1 md:mt-2 text-[10px] sm:text-xs md:text-base line-clamp-2">
+                  {displayStats[0]?.label || 'Traveler'} sudah merasakan
                 </p>
               </div>
             </div>
-            <div className="mt-6 space-y-2">
-              <div className="flex items-center gap-2 text-primary-foreground/80">
-                <span className="text-amber-300">★★★★★</span>
-                <span className="text-sm">{displayStats.find(s => s.label.toLowerCase().includes('rating'))?.value || '4.9/5'} rating</span>
+            <div className="mt-2 md:mt-6 space-y-1 md:space-y-2">
+              <div className="flex items-center gap-1 md:gap-2 text-primary-foreground/80">
+                <span className="text-amber-300 text-xs md:text-base">★★★★★</span>
+                <span className="text-[10px] md:text-sm">{displayStats.find(s => s.label.toLowerCase().includes('rating'))?.value || '4.9'}</span>
               </div>
-              <div className="flex items-center gap-2 text-primary-foreground/80 transition-all duration-300 group-hover:text-primary-foreground group-hover:translate-x-2 group-hover:gap-3">
-                <Users className="w-5 h-5 transition-transform duration-300 group-hover:scale-125 group-hover:rotate-12" />
-                <span className="text-sm transition-all duration-300 group-hover:font-medium">100% ingin ikut lagi</span>
-              </div>
-            </div>
-          </BentoCard>
-
-          {/* Tokyo Preview Card */}
-          <BentoCard variant="default" className="relative overflow-hidden min-h-[200px] animate-fade-up delay-200" hover={true} hoverEffect="tilt">
-            {shuffledImageSets.tokyo.length > 0 && <DynamicImage images={shuffledImageSets.tokyo} interval={13000} alt="Gallery preview" className="absolute inset-0 w-full h-full object-cover transition-all duration-700 group-hover:scale-125 group-hover:rotate-2" />}
-            <div className="absolute inset-0 bg-gradient-to-t from-card-foreground/70 to-transparent transition-all duration-500 group-hover:from-card-foreground/90" />
-            <div className="absolute bottom-0 left-0 right-0 p-4 transition-all duration-300 group-hover:translate-y-[-4px]">
-              <div className="flex items-center gap-2 text-bento-cream transition-all duration-300 group-hover:gap-3">
-                <MapPin className="w-4 h-4 transition-all duration-300 group-hover:scale-125 group-hover:text-primary" />
-                <span className="font-semibold transition-all duration-300 group-hover:tracking-wide group-hover:text-primary-foreground">Tokyo</span>
+              <div className="hidden sm:flex items-center gap-2 text-primary-foreground/80">
+                <Users className="w-4 h-4 md:w-5 md:h-5" />
+                <span className="text-xs md:text-sm">100% ikut lagi</span>
               </div>
             </div>
           </BentoCard>
 
-          {/* Brand Card - Teal */}
-          <BentoCard variant="teal" className="flex flex-col justify-center items-center text-center animate-fade-up delay-300" hoverEffect="glow">
-            <span className="text-4xl md:text-5xl font-bold mb-2 transition-all duration-500 group-hover:scale-110 group-hover:tracking-wide group-hover:text-bento-cream">opentrip</span>
-            <span className="text-2xl md:text-3xl font-light transition-all duration-500 group-hover:scale-105 group-hover:text-primary delay-75">.bpn</span>
-            <p className="text-bento-cream/70 mt-4 text-sm transition-all duration-300 group-hover:text-bento-cream group-hover:translate-y-1 group-hover:tracking-wider">Your Japan Travel Partner</p>
-          </BentoCard>
-
-          {/* Kyoto Preview Card - Tall */}
-          <BentoCard variant="default" size="tall" className="relative overflow-hidden min-h-[200px] animate-fade-up delay-400" hover={true} hoverEffect="float">
-            {shuffledImageSets.kyoto.length > 0 && <DynamicImage images={shuffledImageSets.kyoto} interval={16000} alt="Gallery preview" className="absolute inset-0 w-full h-full object-cover transition-all duration-700 group-hover:scale-125 group-hover:-rotate-1" />}
-            <div className="absolute inset-0 bg-gradient-to-t from-card-foreground/70 to-transparent transition-all duration-500 group-hover:from-card-foreground/90" />
-            <div className="absolute bottom-0 left-0 right-0 p-4 transition-all duration-300 group-hover:translate-y-[-6px]">
-              <div className="flex items-center gap-2 text-bento-cream mb-2 transition-all duration-300 group-hover:gap-3">
-                <MapPin className="w-4 h-4 transition-all duration-300 group-hover:scale-125 group-hover:text-primary" />
-                <span className="font-semibold transition-all duration-300 group-hover:tracking-wide group-hover:text-primary-foreground">Kyoto</span>
+          {/* Tokyo Preview Card - Hidden on mobile, show on sm+ */}
+          <BentoCard variant="default" className="hidden sm:block col-span-1 relative overflow-hidden min-h-[140px] md:min-h-[200px] animate-fade-up delay-200" hover={true} hoverEffect="tilt">
+            {shuffledImageSets.tokyo.length > 0 && <DynamicImage images={shuffledImageSets.tokyo} interval={13000} alt="Gallery preview" className="absolute inset-0 w-full h-full object-cover" />}
+            <div className="absolute inset-0 bg-gradient-to-t from-card-foreground/70 to-transparent" />
+            <div className="absolute bottom-0 left-0 right-0 p-3 md:p-4">
+              <div className="flex items-center gap-2 text-bento-cream">
+                <MapPin className="w-3 h-3 md:w-4 md:h-4" />
+                <span className="font-semibold text-sm md:text-base">Tokyo</span>
               </div>
-              <p className="text-bento-cream/80 text-sm transition-all duration-300 group-hover:text-bento-cream group-hover:translate-x-1">Temple & Tradisi</p>
             </div>
           </BentoCard>
 
-          {/* Schedule Card */}
-          <BentoCard variant="glass" className="flex flex-col justify-between animate-fade-up delay-500" hoverEffect="pulse">
-            <div className="flex items-center gap-3 text-foreground/70 text-sm transition-all duration-300 group-hover:text-foreground group-hover:gap-4">
-              <Calendar className="w-4 h-4 transition-all duration-300 group-hover:scale-125 group-hover:rotate-12 group-hover:text-primary" />
-              <span className="transition-all duration-300 group-hover:tracking-wider">Next Trip</span>
+          {/* Schedule + Price Combined Card for Mobile */}
+          <BentoCard variant="glass" className="col-span-1 sm:hidden flex flex-col justify-between animate-fade-up delay-200 p-3" hoverEffect="pulse">
+            <div>
+              <div className="flex items-center gap-2 text-foreground/70 text-[10px]">
+                <Calendar className="w-3 h-3" />
+                <span>Next Trip</span>
+              </div>
+              <span className="text-lg font-bold text-foreground">MAY 2026</span>
             </div>
-            <div className="mt-4 transition-all duration-500 group-hover:scale-105 origin-left">
-              <span className="text-3xl md:text-4xl font-bold text-foreground transition-all duration-300 group-hover:text-primary group-hover:drop-shadow-lg">MAY</span>
-              <p className="text-lg text-foreground/90 transition-all duration-300 group-hover:text-foreground group-hover:translate-x-1">2026</p>
+            <div className="mt-2 py-1 px-2 rounded-lg bg-primary/20 text-primary text-[10px] font-medium">
+              8 pax only
             </div>
-            <div className="mt-4 py-2 px-3 rounded-xl bg-primary/20 text-primary text-sm font-medium inline-block transition-all duration-300 group-hover:bg-primary group-hover:text-primary-foreground group-hover:scale-105 group-hover:shadow-lg group-hover:shadow-primary/30">
+            <div className="mt-2 border-t border-border pt-2">
+              <span className="text-[10px] text-foreground/60">Mulai dari</span>
+              <p className="text-lg font-bold text-primary">IDR 17jt</p>
+            </div>
+          </BentoCard>
+
+          {/* Brand Card - Smaller on mobile */}
+          <BentoCard variant="teal" className="col-span-1 flex flex-col justify-center items-center text-center animate-fade-up delay-300 p-3 md:p-6" hoverEffect="glow">
+            <span className="text-xl sm:text-2xl md:text-4xl lg:text-5xl font-bold mb-1 md:mb-2">opentrip</span>
+            <span className="text-base sm:text-lg md:text-2xl lg:text-3xl font-light">.bpn</span>
+            <p className="text-bento-cream/70 mt-2 md:mt-4 text-[10px] md:text-sm">Your Japan Travel Partner</p>
+          </BentoCard>
+
+          {/* Kyoto Preview Card - Hidden on very small, show on sm+ */}
+          <BentoCard variant="default" size="tall" className="hidden sm:block col-span-1 relative overflow-hidden min-h-[140px] md:min-h-[200px] animate-fade-up delay-400" hover={true} hoverEffect="float">
+            {shuffledImageSets.kyoto.length > 0 && <DynamicImage images={shuffledImageSets.kyoto} interval={16000} alt="Gallery preview" className="absolute inset-0 w-full h-full object-cover" />}
+            <div className="absolute inset-0 bg-gradient-to-t from-card-foreground/70 to-transparent" />
+            <div className="absolute bottom-0 left-0 right-0 p-3 md:p-4">
+              <div className="flex items-center gap-2 text-bento-cream mb-1 md:mb-2">
+                <MapPin className="w-3 h-3 md:w-4 md:h-4" />
+                <span className="font-semibold text-sm md:text-base">Kyoto</span>
+              </div>
+              <p className="text-bento-cream/80 text-xs md:text-sm">Temple & Tradisi</p>
+            </div>
+          </BentoCard>
+
+          {/* Schedule Card - Desktop only */}
+          <BentoCard variant="glass" className="hidden sm:flex col-span-1 flex-col justify-between animate-fade-up delay-500" hoverEffect="pulse">
+            <div className="flex items-center gap-3 text-foreground/70 text-sm">
+              <Calendar className="w-4 h-4" />
+              <span>Next Trip</span>
+            </div>
+            <div className="mt-4">
+              <span className="text-3xl md:text-4xl font-bold text-foreground">MAY</span>
+              <p className="text-lg text-foreground/90">2026</p>
+            </div>
+            <div className="mt-4 py-2 px-3 rounded-xl bg-primary/20 text-primary text-sm font-medium inline-block">
               Slot Terbatas (Hanya 8 pax)
             </div>
           </BentoCard>
 
-          {/* CTA Card */}
-          <BentoCard variant="default" className="flex flex-col justify-center items-center text-center animate-fade-up delay-600" hoverEffect="lift">
-            <p className="text-card-foreground/80 text-sm mb-3 transition-all duration-300 group-hover:text-card-foreground group-hover:-translate-y-1">Siap untuk petualangan?</p>
-            <p className="text-xl font-bold text-card-foreground mb-4 transition-all duration-300 group-hover:scale-105 group-hover:tracking-wide">Mulai dari</p>
-            <div className="flex items-baseline gap-1 transition-all duration-500 group-hover:scale-110 group-hover:gap-2">
-              <span className="text-3xl font-bold text-primary transition-all duration-300 group-hover:drop-shadow-[0_0_10px_rgba(220,38,38,0.5)]">IDR 17jt</span>
-              <span className="text-lg text-primary transition-all duration-300 group-hover:translate-x-1">juta</span>
+          {/* CTA Card - Desktop only */}
+          <BentoCard variant="default" className="hidden sm:flex col-span-1 flex-col justify-center items-center text-center animate-fade-up delay-600" hoverEffect="lift">
+            <p className="text-card-foreground/80 text-sm mb-3">Siap untuk petualangan?</p>
+            <p className="text-xl font-bold text-card-foreground mb-4">Mulai dari</p>
+            <div className="flex items-baseline gap-1">
+              <span className="text-3xl font-bold text-primary">IDR 17jt</span>
+              <span className="text-lg text-primary">juta</span>
             </div>
-            <p className="text-card-foreground/60 text-xs mt-2 transition-all duration-300 group-hover:text-card-foreground/80 group-hover:translate-y-1">*per orang</p>
+            <p className="text-card-foreground/60 text-xs mt-2">*per orang</p>
           </BentoCard>
         </div>
 
-        {/* Scroll indicator */}
-        <div className="flex justify-center mt-12">
+        {/* Scroll indicator - Smaller on mobile */}
+        <div className="flex justify-center mt-6 md:mt-12">
           <button onClick={scrollToPackages} className="flex flex-col items-center text-muted-foreground hover:text-foreground transition-colors duration-300">
-            <span className="text-sm mb-2">Scroll untuk melihat lebih</span>
-            <ChevronDown className="w-6 h-6 animate-bounce" />
+            <span className="text-xs md:text-sm mb-1 md:mb-2">Scroll untuk melihat lebih</span>
+            <ChevronDown className="w-5 h-5 md:w-6 md:h-6 animate-bounce" />
           </button>
         </div>
       </div>
