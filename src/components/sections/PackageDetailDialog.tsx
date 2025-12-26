@@ -24,9 +24,6 @@ import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { generatePackagePdf } from "@/lib/generatePackagePdf";
 import { toast } from "sonner";
-import SlotIndicator from "@/components/campaign/SlotIndicator";
-import PriceTierBadge from "@/components/campaign/PriceTierBadge";
-
 interface ItineraryItem {
   day: number;
   title: string;
@@ -50,15 +47,6 @@ interface TripPackageDetail {
   departure_time: string | null;
   start_date: string | null;
   available_seats: number | null;
-  // Price tier fields
-  early_bird_price?: number | null;
-  early_bird_seats?: number | null;
-  early_bird_deadline?: string | null;
-  regular_price?: number | null;
-  last_call_price?: number | null;
-  last_call_start_date?: string | null;
-  total_seats?: number | null;
-  booked_seats?: number | null;
 }
 
 interface PackageDetailDialogProps {
@@ -153,26 +141,6 @@ export function PackageDetailDialog({
 
         <ScrollArea className="max-h-[calc(90vh-18rem)]">
           <div className="p-6 space-y-6">
-            {/* Slot Indicator */}
-            <SlotIndicator 
-              totalSeats={pkg.total_seats || pkg.available_seats || 12}
-              bookedSeats={pkg.booked_seats || 0}
-            />
-            
-            {/* Price Tier */}
-            {(pkg.early_bird_price || pkg.last_call_price) && (
-              <PriceTierBadge
-                currentPrice={pkg.price}
-                earlyBirdPrice={pkg.early_bird_price}
-                regularPrice={pkg.regular_price}
-                lastCallPrice={pkg.last_call_price}
-                earlyBirdDeadline={pkg.early_bird_deadline}
-                earlyBirdSeats={pkg.early_bird_seats}
-                bookedSeats={pkg.booked_seats || 0}
-                lastCallStartDate={pkg.last_call_start_date}
-              />
-            )}
-            
             {/* Quick Info + Download Button */}
             <div className="flex flex-wrap items-center justify-between gap-4">
               <div className="flex flex-wrap gap-4">
@@ -184,6 +152,12 @@ export function PackageDetailDialog({
                   <div className="flex items-center gap-2 text-muted-foreground">
                     <Calendar className="w-4 h-4 text-primary" />
                     <span className="text-sm">{formatDate(pkg.start_date)}</span>
+                  </div>
+                )}
+                {pkg.available_seats && (
+                  <div className="flex items-center gap-2 text-muted-foreground">
+                    <Users className="w-4 h-4 text-primary" />
+                    <span className="text-sm">{pkg.available_seats} Seat</span>
                   </div>
                 )}
                 {pkg.meeting_point && (
