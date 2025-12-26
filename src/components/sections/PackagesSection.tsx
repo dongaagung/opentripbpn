@@ -7,6 +7,9 @@ import { useGallery } from "@/contexts/GalleryContext";
 import { PackageDetailDialog } from "./PackageDetailDialog";
 import { openWhatsApp } from "@/lib/whatsapp";
 import { Json } from "@/integrations/supabase/types";
+import SlotIndicator from "@/components/campaign/SlotIndicator";
+import TrustBadges from "@/components/campaign/TrustBadges";
+import CampaignBanner from "@/components/campaign/CampaignBanner";
 
 interface ItineraryItem {
   day: number;
@@ -32,6 +35,15 @@ interface TripPackage {
   departure_time: string | null;
   start_date: string | null;
   available_seats: number | null;
+  // New price tier fields
+  early_bird_price: number | null;
+  early_bird_seats: number | null;
+  early_bird_deadline: string | null;
+  regular_price: number | null;
+  last_call_price: number | null;
+  last_call_start_date: string | null;
+  total_seats: number | null;
+  booked_seats: number | null;
 }
 
 const parseItinerary = (data: Json | null): ItineraryItem[] => {
@@ -63,6 +75,31 @@ const formatPrice = (price: number) => {
 
 const PackageCard = ({ pkg, fallbackImage, onViewDetails }: PackageCardProps) => {
   const imageUrl = pkg.cover_image_url || fallbackImage;
+  const totalSeats = pkg.total_seats || pkg.available_seats || 12;
+  const bookedSeats = pkg.booked_seats || 0;
+  
+  // Calculate current price based on tier
+  const getCurrentPrice = () => {
+    const now = new Date();
+    
+    if (pkg.early_bird_price && pkg.early_bird_deadline) {
+      const deadline = new Date(pkg.early_bird_deadline);
+      if (now < deadline && bookedSeats < (pkg.early_bird_seats || 10)) {
+        return { price: pkg.early_bird_price, tier: "Early Bird", isDiscounted: true };
+      }
+    }
+    
+    if (pkg.last_call_price && pkg.last_call_start_date) {
+      const startDate = new Date(pkg.last_call_start_date);
+      if (now >= startDate) {
+        return { price: pkg.last_call_price, tier: "Last Call", isDiscounted: false };
+      }
+    }
+    
+    return { price: pkg.regular_price || pkg.price, tier: null, isDiscounted: false };
+  };
+  
+  const priceInfo = getCurrentPrice();
 
   return (
     <BentoCard
@@ -76,7 +113,7 @@ const PackageCard = ({ pkg, fallbackImage, onViewDetails }: PackageCardProps) =>
         <img
           src={imageUrl}
           alt={pkg.title}
-          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+          className="w-full h-full object-cover transition-transform duration-700 md:group-hover:scale-110"
           loading="lazy"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-card-foreground/90 via-card-foreground/40 to-transparent" />
@@ -85,24 +122,42 @@ const PackageCard = ({ pkg, fallbackImage, onViewDetails }: PackageCardProps) =>
       {/* Content */}
       <div className="relative z-10 h-full flex flex-col justify-end min-h-[320px]">
         {/* Rating Badge */}
-        <div className="absolute top-4 right-4 flex items-center gap-1 bg-bento-cream/90 backdrop-blur-sm px-3 py-1.5 rounded-full transition-all duration-300 hover:scale-110 hover:shadow-lg hover:bg-bento-cream cursor-default">
-          <Star className="w-4 h-4 text-amber-500 fill-amber-500 transition-transform duration-300 group-hover:rotate-12" />
+        <div className="absolute top-4 right-4 flex items-center gap-1 bg-bento-cream/90 backdrop-blur-sm px-3 py-1.5 rounded-full transition-all duration-300 md:hover:scale-110 md:hover:shadow-lg md:hover:bg-bento-cream cursor-default">
+          <Star className="w-4 h-4 text-amber-500 fill-amber-500 transition-transform duration-300 md:group-hover:rotate-12" />
           <span className="text-card-foreground font-semibold text-sm">4.9</span>
         </div>
-
+        
+        {/* Price Tier Badge */}
+        {priceInfo.tier && (
+          <div className={`absolute top-4 left-4 px-3 py-1.5 rounded-full text-xs font-bold backdrop-blur-sm ${
+            priceInfo.tier === "Early Bird" 
+              ? "bg-emerald-500/90 text-white" 
+              : "bg-destructive/90 text-white"
+          }`}>
+            {priceInfo.tier}
+          </div>
+        )}
 
         {/* Info */}
         <div className="space-y-3">
+          {/* Slot Indicator */}
+          <SlotIndicator 
+            totalSeats={totalSeats} 
+            bookedSeats={bookedSeats} 
+            compact 
+            className="mb-2"
+          />
+          
           {/* Location & Duration Badge */}
-          <div className="inline-flex items-center gap-2 text-bento-cream/80 bg-card-foreground/20 backdrop-blur-sm px-3 py-1.5 rounded-full transition-all duration-300 hover:bg-card-foreground/40 hover:scale-105 hover:text-bento-cream cursor-default">
-            <MapPin className="w-4 h-4 transition-transform duration-300 hover:animate-bounce" />
+          <div className="inline-flex items-center gap-2 text-bento-cream/80 bg-card-foreground/20 backdrop-blur-sm px-3 py-1.5 rounded-full transition-all duration-300 md:hover:bg-card-foreground/40 md:hover:scale-105 md:hover:text-bento-cream cursor-default">
+            <MapPin className="w-4 h-4 transition-transform duration-300 md:hover:animate-bounce" />
             <span className="text-sm">{pkg.destination}</span>
             <span className="mx-1">•</span>
             <Clock className="w-4 h-4" />
             <span className="text-sm">{pkg.duration_days} Hari</span>
           </div>
 
-          <h3 className="text-2xl font-bold text-bento-cream transition-all duration-300 group-hover:translate-x-1">{pkg.title}</h3>
+          <h3 className="text-2xl font-bold text-bento-cream transition-all duration-300 md:group-hover:translate-x-1">{pkg.title}</h3>
 
           {/* Highlights */}
           {pkg.highlights && pkg.highlights.length > 0 && (
@@ -110,14 +165,14 @@ const PackageCard = ({ pkg, fallbackImage, onViewDetails }: PackageCardProps) =>
               {pkg.highlights.slice(0, 3).map((highlight, idx) => (
                 <span
                   key={idx}
-                  className="text-xs px-2 py-1 bg-bento-cream/20 backdrop-blur-sm rounded-lg text-bento-cream transition-all duration-300 hover:bg-bento-cream/40 hover:scale-110 hover:-translate-y-1 hover:shadow-md cursor-default"
+                  className="text-xs px-2 py-1 bg-bento-cream/20 backdrop-blur-sm rounded-lg text-bento-cream transition-all duration-300 md:hover:bg-bento-cream/40 md:hover:scale-110 md:hover:-translate-y-1 md:hover:shadow-md cursor-default"
                   style={{ transitionDelay: `${idx * 50}ms` }}
                 >
                   {highlight}
                 </span>
               ))}
               {pkg.highlights.length > 3 && (
-                <span className="text-xs px-2 py-1 bg-primary/60 backdrop-blur-sm rounded-lg text-bento-cream transition-all duration-300 hover:bg-primary hover:scale-110 hover:-translate-y-1 cursor-default">
+                <span className="text-xs px-2 py-1 bg-primary/60 backdrop-blur-sm rounded-lg text-bento-cream transition-all duration-300 md:hover:bg-primary md:hover:scale-110 md:hover:-translate-y-1 cursor-default">
                   +{pkg.highlights.length - 3} more
                 </span>
               )}
@@ -126,15 +181,22 @@ const PackageCard = ({ pkg, fallbackImage, onViewDetails }: PackageCardProps) =>
 
           {/* Price & CTA */}
           <div className="flex items-center justify-between pt-2">
-            <div className="transition-all duration-300 hover:scale-105 cursor-default group/price">
-              <span className="text-bento-cream/60 text-sm transition-colors duration-300 group-hover/price:text-bento-cream/80">Mulai dari</span>
-              <p className="text-2xl font-bold text-bento-cream transition-all duration-300 group-hover/price:text-primary-foreground group-hover/price:drop-shadow-[0_0_8px_rgba(255,255,255,0.5)]">
-                IDR {formatPrice(pkg.price)}
-              </p>
+            <div className="transition-all duration-300 md:hover:scale-105 cursor-default group/price">
+              <span className="text-bento-cream/60 text-sm transition-colors duration-300 md:group-hover/price:text-bento-cream/80">Mulai dari</span>
+              <div className="flex items-baseline gap-2">
+                <p className="text-2xl font-bold text-bento-cream transition-all duration-300 md:group-hover/price:text-primary-foreground md:group-hover/price:drop-shadow-[0_0_8px_rgba(255,255,255,0.5)]">
+                  IDR {formatPrice(priceInfo.price)}
+                </p>
+                {priceInfo.isDiscounted && pkg.regular_price && (
+                  <span className="text-sm text-bento-cream/50 line-through">
+                    {formatPrice(pkg.regular_price)}
+                  </span>
+                )}
+              </div>
             </div>
-            <Button variant="hero" size="default" className="transition-all duration-300 hover:scale-105 hover:shadow-xl hover:-translate-y-1" onClick={(e) => { e.stopPropagation(); onViewDetails(); }}>
+            <Button variant="hero" size="default" className="transition-all duration-300 md:hover:scale-105 md:hover:shadow-xl md:hover:-translate-y-1" onClick={(e) => { e.stopPropagation(); onViewDetails(); }}>
               Detail
-              <ArrowRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" />
+              <ArrowRight className="w-4 h-4 transition-transform duration-300 md:group-hover:translate-x-1" />
             </Button>
           </div>
         </div>
@@ -245,6 +307,15 @@ const PackagesSection = () => {
             Berbagai pilihan paket trip ke Jepang dengan itinerary menarik dan harga terjangkau
           </p>
         </div>
+        
+        {/* Trust Badges */}
+        <TrustBadges className="mb-8 md:mb-12" />
+        
+        {/* Campaign Banner */}
+        <CampaignBanner 
+          className="mb-8 md:mb-12" 
+          onAction={() => openWhatsApp("Halo opentrip.bpn, saya tertarik dengan promo yang sedang berlangsung!")}
+        />
 
         {/* Packages Grid - 1 col mobile, 2 col tablet, 3 col desktop */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
