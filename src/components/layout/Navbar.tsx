@@ -117,54 +117,54 @@ const Navbar = () => {
               </button>
             </div>
           </div>
-
-          {/* Mobile Navigation - Full Screen Slide */}
-          <div
-            className={`md:hidden fixed left-0 right-0 bottom-0 bg-background/98 backdrop-blur-xl border-t border-border transition-all duration-500 ease-out overflow-hidden ${
-              isOpen 
-                ? "top-16 opacity-100 visible" 
-                : "top-full opacity-0 invisible pointer-events-none"
-            }`}
-          >
-            <div className="container mx-auto px-4 py-6 h-full overflow-y-auto">
-              <div className="space-y-2">
-                {navLinks.map((link, index) => (
-                  <a
-                    key={link.href}
-                    href={link.href}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      handleNavClick(link.href);
-                    }}
-                    className="flex items-center gap-4 py-4 px-4 rounded-xl text-foreground hover:bg-primary/10 hover:text-primary font-medium transition-all duration-300 border border-transparent hover:border-primary/20"
-                    style={{ 
-                      animationDelay: `${index * 50}ms`,
-                      opacity: isOpen ? 1 : 0,
-                      transform: isOpen ? 'translateX(0)' : 'translateX(-20px)',
-                      transition: `all 0.3s ease ${index * 50}ms`
-                    }}
-                  >
-                    <span className="w-2 h-2 rounded-full bg-primary/40" />
-                    {link.label}
-                  </a>
-                ))}
-              </div>
-              
-              {/* Mobile CTA */}
-              <div className="mt-8 pt-6 border-t border-border">
-                <Button
-                  variant="hero"
-                  size="lg"
-                  className="w-full py-6 text-lg"
-                  onClick={() => openWhatsApp()}
-                >
-                  💬 Hubungi Kami via WhatsApp
-                </Button>
-              </div>
-            </div>
-          </div>
         </div>
       </nav>
+
+      {/* Mobile Navigation - Moved outside nav for proper positioning */}
+      <div
+        className={`md:hidden fixed left-0 right-0 z-40 bg-background/98 backdrop-blur-xl border-t border-border transition-all duration-500 ease-out ${
+          isOpen 
+            ? "top-16 bottom-0 opacity-100 visible" 
+            : "top-16 -bottom-full opacity-0 invisible pointer-events-none"
+        }`}
+      >
+        <div className="container mx-auto px-4 py-6 h-full overflow-y-auto">
+          <div className="space-y-2">
+            {navLinks.map((link, index) => (
+              <a
+                key={link.href}
+                href={link.href}
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleNavClick(link.href);
+                }}
+                className="flex items-center gap-4 py-4 px-4 rounded-xl text-foreground hover:bg-primary/10 hover:text-primary font-medium transition-all duration-300 border border-transparent hover:border-primary/20"
+                style={{ 
+                  animationDelay: `${index * 50}ms`,
+                  opacity: isOpen ? 1 : 0,
+                  transform: isOpen ? 'translateX(0)' : 'translateX(-20px)',
+                  transition: `all 0.3s ease ${index * 50}ms`
+                }}
+              >
+                <span className="w-2 h-2 rounded-full bg-primary/40" />
+                {link.label}
+              </a>
+            ))}
+          </div>
+          
+          {/* Mobile CTA */}
+          <div className="mt-8 pt-6 border-t border-border">
+            <Button
+              variant="hero"
+              size="lg"
+              className="w-full py-6 text-lg"
+              onClick={() => openWhatsApp()}
+            >
+              💬 Hubungi Kami via WhatsApp
+            </Button>
+          </div>
+        </div>
+      </div>
     </>
   );
 };

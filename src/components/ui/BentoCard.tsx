@@ -10,13 +10,13 @@ interface BentoCardProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 const hoverEffectClasses = {
-  lift: "hover:-translate-y-4 hover:shadow-[0_20px_40px_rgba(0,0,0,0.15)] hover:shadow-primary/30 hover:border-primary/20",
-  tilt: "hover:rotate-1 hover:scale-[1.02] hover:shadow-[0_15px_35px_rgba(0,0,0,0.12)] hover:-translate-y-1",
-  zoom: "hover:scale-[1.03] hover:shadow-[0_25px_50px_rgba(0,0,0,0.18)] hover:z-10",
-  glow: "hover:shadow-[0_0_50px_rgba(220,38,38,0.5),0_0_80px_rgba(220,38,38,0.3)] hover:-translate-y-2 hover:border-primary/40",
-  float: "hover:-translate-y-3 hover:translate-x-1 hover:shadow-[0_20px_40px_rgba(0,0,0,0.15)] hover:rotate-[0.5deg]",
-  pulse: "hover:shadow-[0_0_40px_rgba(13,148,136,0.4)] hover:scale-[1.015] hover:-translate-y-1",
-  shimmer: "hover:-translate-y-2 hover:shadow-[0_15px_35px_rgba(0,0,0,0.12)] hover:scale-[1.02]",
+  lift: "md:hover:-translate-y-4 md:hover:shadow-[0_20px_40px_rgba(0,0,0,0.15)] md:hover:shadow-primary/30 md:hover:border-primary/20 active:scale-[0.98] active:shadow-lg",
+  tilt: "md:hover:rotate-1 md:hover:scale-[1.02] md:hover:shadow-[0_15px_35px_rgba(0,0,0,0.12)] md:hover:-translate-y-1 active:scale-[0.98]",
+  zoom: "md:hover:scale-[1.03] md:hover:shadow-[0_25px_50px_rgba(0,0,0,0.18)] md:hover:z-10 active:scale-[0.98]",
+  glow: "md:hover:shadow-[0_0_50px_rgba(220,38,38,0.5),0_0_80px_rgba(220,38,38,0.3)] md:hover:-translate-y-2 md:hover:border-primary/40 active:scale-[0.98]",
+  float: "md:hover:-translate-y-3 md:hover:translate-x-1 md:hover:shadow-[0_20px_40px_rgba(0,0,0,0.15)] md:hover:rotate-[0.5deg] active:scale-[0.98]",
+  pulse: "md:hover:shadow-[0_0_40px_rgba(13,148,136,0.4)] md:hover:scale-[1.015] md:hover:-translate-y-1 active:scale-[0.98]",
+  shimmer: "md:hover:-translate-y-2 md:hover:shadow-[0_15px_35px_rgba(0,0,0,0.12)] md:hover:scale-[1.02] active:scale-[0.98]",
 };
 
 const DecorativeElement = ({ type, variant }: { type: string; variant: string }) => {
