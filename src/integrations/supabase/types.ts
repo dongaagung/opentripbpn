@@ -14,6 +14,114 @@ export type Database = {
   }
   public: {
     Tables: {
+      addon_experiences: {
+        Row: {
+          created_at: string
+          description: string | null
+          display_order: number | null
+          icon: string | null
+          id: string
+          is_active: boolean | null
+          is_free: boolean | null
+          name: string
+          package_ids: string[] | null
+          price: number | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          display_order?: number | null
+          icon?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_free?: boolean | null
+          name: string
+          package_ids?: string[] | null
+          price?: number | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          display_order?: number | null
+          icon?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_free?: boolean | null
+          name?: string
+          package_ids?: string[] | null
+          price?: number | null
+        }
+        Relationships: []
+      }
+      campaigns: {
+        Row: {
+          applies_to_packages: string[] | null
+          badge_color: string | null
+          badge_text: string | null
+          campaign_type: string
+          copywriting: string | null
+          created_at: string
+          description: string | null
+          discount_type: string | null
+          discount_value: number | null
+          end_date: string | null
+          id: string
+          is_active: boolean | null
+          max_participants: number | null
+          metadata: Json | null
+          min_participants: number | null
+          name: string
+          priority: number | null
+          start_date: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          applies_to_packages?: string[] | null
+          badge_color?: string | null
+          badge_text?: string | null
+          campaign_type: string
+          copywriting?: string | null
+          created_at?: string
+          description?: string | null
+          discount_type?: string | null
+          discount_value?: number | null
+          end_date?: string | null
+          id?: string
+          is_active?: boolean | null
+          max_participants?: number | null
+          metadata?: Json | null
+          min_participants?: number | null
+          name: string
+          priority?: number | null
+          start_date?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          applies_to_packages?: string[] | null
+          badge_color?: string | null
+          badge_text?: string | null
+          campaign_type?: string
+          copywriting?: string | null
+          created_at?: string
+          description?: string | null
+          discount_type?: string | null
+          discount_value?: number | null
+          end_date?: string | null
+          id?: string
+          is_active?: boolean | null
+          max_participants?: number | null
+          metadata?: Json | null
+          min_participants?: number | null
+          name?: string
+          priority?: number | null
+          start_date?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       comparison_items: {
         Row: {
           category: string
@@ -215,6 +323,51 @@ export type Database = {
         }
         Relationships: []
       }
+      referral_codes: {
+        Row: {
+          code: string
+          created_at: string
+          discount_for_referee: number | null
+          discount_for_referrer: number | null
+          expires_at: string | null
+          id: string
+          is_active: boolean | null
+          max_usage: number | null
+          referrer_email: string | null
+          referrer_name: string
+          referrer_phone: string | null
+          usage_count: number | null
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          discount_for_referee?: number | null
+          discount_for_referrer?: number | null
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          max_usage?: number | null
+          referrer_email?: string | null
+          referrer_name: string
+          referrer_phone?: string | null
+          usage_count?: number | null
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          discount_for_referee?: number | null
+          discount_for_referrer?: number | null
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          max_usage?: number | null
+          referrer_email?: string | null
+          referrer_name?: string
+          referrer_phone?: string | null
+          usage_count?: number | null
+        }
+        Relationships: []
+      }
       testimonials: {
         Row: {
           created_at: string
@@ -299,66 +452,123 @@ export type Database = {
       trip_packages: {
         Row: {
           available_seats: number | null
+          booked_seats: number | null
           cover_image_url: string | null
           created_at: string
           departure_time: string | null
           description: string | null
           destination: string
           duration_days: number
+          early_bird_deadline: string | null
+          early_bird_price: number | null
+          early_bird_seats: number | null
           exclusions: string[] | null
           highlights: string[] | null
           id: string
           inclusions: string[] | null
           is_active: boolean | null
           itinerary: Json | null
+          last_call_price: number | null
+          last_call_start_date: string | null
           meeting_point: string | null
           price: number
+          regular_price: number | null
           start_date: string | null
           target_participants: string | null
           title: string
+          total_seats: number | null
           updated_at: string
         }
         Insert: {
           available_seats?: number | null
+          booked_seats?: number | null
           cover_image_url?: string | null
           created_at?: string
           departure_time?: string | null
           description?: string | null
           destination: string
           duration_days?: number
+          early_bird_deadline?: string | null
+          early_bird_price?: number | null
+          early_bird_seats?: number | null
           exclusions?: string[] | null
           highlights?: string[] | null
           id?: string
           inclusions?: string[] | null
           is_active?: boolean | null
           itinerary?: Json | null
+          last_call_price?: number | null
+          last_call_start_date?: string | null
           meeting_point?: string | null
           price: number
+          regular_price?: number | null
           start_date?: string | null
           target_participants?: string | null
           title: string
+          total_seats?: number | null
           updated_at?: string
         }
         Update: {
           available_seats?: number | null
+          booked_seats?: number | null
           cover_image_url?: string | null
           created_at?: string
           departure_time?: string | null
           description?: string | null
           destination?: string
           duration_days?: number
+          early_bird_deadline?: string | null
+          early_bird_price?: number | null
+          early_bird_seats?: number | null
           exclusions?: string[] | null
           highlights?: string[] | null
           id?: string
           inclusions?: string[] | null
           is_active?: boolean | null
           itinerary?: Json | null
+          last_call_price?: number | null
+          last_call_start_date?: string | null
           meeting_point?: string | null
           price?: number
+          regular_price?: number | null
           start_date?: string | null
           target_participants?: string | null
           title?: string
+          total_seats?: number | null
           updated_at?: string
+        }
+        Relationships: []
+      }
+      trust_proofs: {
+        Row: {
+          created_at: string
+          display_order: number | null
+          icon: string | null
+          id: string
+          is_active: boolean | null
+          label: string
+          proof_type: string
+          value: string
+        }
+        Insert: {
+          created_at?: string
+          display_order?: number | null
+          icon?: string | null
+          id?: string
+          is_active?: boolean | null
+          label: string
+          proof_type: string
+          value: string
+        }
+        Update: {
+          created_at?: string
+          display_order?: number | null
+          icon?: string | null
+          id?: string
+          is_active?: boolean | null
+          label?: string
+          proof_type?: string
+          value?: string
         }
         Relationships: []
       }
