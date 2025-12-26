@@ -296,8 +296,50 @@ export type Database = {
         }
         Relationships: []
       }
+      trip_package_pricing_history: {
+        Row: {
+          changed_at: string
+          changed_by: string | null
+          created_at: string
+          field_changed: string
+          id: string
+          new_value: string | null
+          old_value: string | null
+          package_id: string
+        }
+        Insert: {
+          changed_at?: string
+          changed_by?: string | null
+          created_at?: string
+          field_changed: string
+          id?: string
+          new_value?: string | null
+          old_value?: string | null
+          package_id: string
+        }
+        Update: {
+          changed_at?: string
+          changed_by?: string | null
+          created_at?: string
+          field_changed?: string
+          id?: string
+          new_value?: string | null
+          old_value?: string | null
+          package_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trip_package_pricing_history_package_id_fkey"
+            columns: ["package_id"]
+            isOneToOne: false
+            referencedRelation: "trip_packages"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
       trip_packages: {
         Row: {
+          active_pricing_tier: string | null
           available_seats: number | null
           cover_image_url: string | null
           created_at: string
@@ -305,20 +347,25 @@ export type Database = {
           description: string | null
           destination: string
           duration_days: number
+          early_bird_price: number | null
           exclusions: string[] | null
           highlights: string[] | null
           id: string
           inclusions: string[] | null
           is_active: boolean | null
           itinerary: Json | null
+          last_call_price: number | null
           meeting_point: string | null
           price: number
+          regular_price: number | null
           start_date: string | null
           target_participants: string | null
           title: string
           updated_at: string
+          use_tiered_pricing: boolean | null
         }
         Insert: {
+          active_pricing_tier?: string | null
           available_seats?: number | null
           cover_image_url?: string | null
           created_at?: string
@@ -326,20 +373,25 @@ export type Database = {
           description?: string | null
           destination: string
           duration_days?: number
+          early_bird_price?: number | null
           exclusions?: string[] | null
           highlights?: string[] | null
           id?: string
           inclusions?: string[] | null
           is_active?: boolean | null
           itinerary?: Json | null
+          last_call_price?: number | null
           meeting_point?: string | null
           price: number
+          regular_price?: number | null
           start_date?: string | null
           target_participants?: string | null
           title: string
           updated_at?: string
+          use_tiered_pricing?: boolean | null
         }
         Update: {
+          active_pricing_tier?: string | null
           available_seats?: number | null
           cover_image_url?: string | null
           created_at?: string
@@ -347,18 +399,22 @@ export type Database = {
           description?: string | null
           destination?: string
           duration_days?: number
+          early_bird_price?: number | null
           exclusions?: string[] | null
           highlights?: string[] | null
           id?: string
           inclusions?: string[] | null
           is_active?: boolean | null
           itinerary?: Json | null
+          last_call_price?: number | null
           meeting_point?: string | null
           price?: number
+          regular_price?: number | null
           start_date?: string | null
           target_participants?: string | null
           title?: string
           updated_at?: string
+          use_tiered_pricing?: boolean | null
         }
         Relationships: []
       }

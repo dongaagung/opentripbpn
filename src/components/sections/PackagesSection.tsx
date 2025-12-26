@@ -32,6 +32,12 @@ interface TripPackage {
   departure_time: string | null;
   start_date: string | null;
   available_seats: number | null;
+  // Pricing tiers fields
+  use_tiered_pricing: boolean;
+  active_pricing_tier: 'early_bird' | 'regular' | 'last_call';
+  early_bird_price: number | null;
+  regular_price: number | null;
+  last_call_price: number | null;
 }
 
 const parseItinerary = (data: Json | null): ItineraryItem[] => {
@@ -59,6 +65,29 @@ const formatPrice = (price: number) => {
     return `${(price / 1000000).toFixed(1)} Juta`;
   }
   return price.toLocaleString("id-ID");
+};
+
+const getActivePrice = (pkg: TripPackage): number => {
+  if (!pkg.use_tiered_pricing) return pkg.price;
+
+  switch (pkg.active_pricing_tier) {
+    case 'early_bird':
+      return pkg.early_bird_price ?? pkg.regular_price ?? pkg.price;
+    case 'last_call':
+      return pkg.last_call_price ?? pkg.regular_price ?? pkg.price;
+    case 'regular':
+    default:
+      return pkg.regular_price ?? pkg.price;
+  }
+};
+
+const getTierLabel = (tier: string): string => {
+  const labels = {
+    early_bird: '🐦 Early Bird',
+    regular: '💰 Harga Normal',
+    last_call: '🔥 Last Call',
+  };
+  return labels[tier] || 'Harga';
 };
 
 const PackageCard = ({ pkg, fallbackImage, onViewDetails }: PackageCardProps) => {
@@ -127,9 +156,16 @@ const PackageCard = ({ pkg, fallbackImage, onViewDetails }: PackageCardProps) =>
           {/* Price & CTA */}
           <div className="flex items-center justify-between pt-2">
             <div className="transition-all duration-300 hover:scale-105 cursor-default group/price">
+              {pkg.use_tiered_pricing && (
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-xs px-2 py-0.5 bg-bento-cream/20 rounded-full text-bento-cream backdrop-blur-sm">
+                    {getTierLabel(pkg.active_pricing_tier)}
+                  </span>
+                </div>
+              )}
               <span className="text-bento-cream/60 text-sm transition-colors duration-300 group-hover/price:text-bento-cream/80">Mulai dari</span>
               <p className="text-2xl font-bold text-bento-cream transition-all duration-300 group-hover/price:text-primary-foreground group-hover/price:drop-shadow-[0_0_8px_rgba(255,255,255,0.5)]">
-                IDR {formatPrice(pkg.price)}
+                IDR {formatPrice(getActivePrice(pkg))}
               </p>
             </div>
             <Button variant="hero" size="default" className="transition-all duration-300 hover:scale-105 hover:shadow-xl hover:-translate-y-1" onClick={(e) => { e.stopPropagation(); onViewDetails(); }}>

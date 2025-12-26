@@ -1,16 +1,12 @@
-import { 
-  MapPin, 
-  Clock, 
-  Calendar, 
-  Users, 
-  CheckCircle2, 
-  XCircle, 
+import {
+  Clock,
+  Calendar,
+  Users,
+  CheckCircle2,
+  XCircle,
   MapPinned,
-  ArrowRight,
-  Download,
-  Loader2
+  ArrowRight
 } from "lucide-react";
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -22,8 +18,6 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { generatePackagePdf } from "@/lib/generatePackagePdf";
-import { toast } from "sonner";
 interface ItineraryItem {
   day: number;
   title: string;
@@ -47,6 +41,12 @@ interface TripPackageDetail {
   departure_time: string | null;
   start_date: string | null;
   available_seats: number | null;
+  // Pricing tiers fields
+  use_tiered_pricing?: boolean;
+  active_pricing_tier?: 'early_bird' | 'regular' | 'last_call';
+  early_bird_price?: number | null;
+  regular_price?: number | null;
+  last_call_price?: number | null;
 }
 
 interface PackageDetailDialogProps {
@@ -56,14 +56,12 @@ interface PackageDetailDialogProps {
   fallbackImage: string;
 }
 
-export function PackageDetailDialog({ 
-  pkg, 
-  open, 
-  onOpenChange, 
-  fallbackImage 
+export function PackageDetailDialog({
+  pkg,
+  open,
+  onOpenChange,
+  fallbackImage
 }: PackageDetailDialogProps) {
-  const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
-  
   if (!pkg) return null;
 
   const formatPrice = (price: number) => {
@@ -72,6 +70,29 @@ export function PackageDetailDialog({
       currency: "IDR",
       minimumFractionDigits: 0,
     }).format(price);
+  };
+
+  const getActivePrice = (pkg: TripPackageDetail): number => {
+    if (!pkg.use_tiered_pricing) return pkg.price;
+
+    switch (pkg.active_pricing_tier) {
+      case 'early_bird':
+        return pkg.early_bird_price ?? pkg.regular_price ?? pkg.price;
+      case 'last_call':
+        return pkg.last_call_price ?? pkg.regular_price ?? pkg.price;
+      case 'regular':
+      default:
+        return pkg.regular_price ?? pkg.price;
+    }
+  };
+
+  const getTierLabel = (tier: string): string => {
+    const labels = {
+      early_bird: '🐦 Early Bird',
+      regular: '💰 Harga Normal',
+      last_call: '🔥 Last Call',
+    };
+    return labels[tier] || 'Harga';
   };
 
   const formatDate = (dateStr: string) => {
@@ -93,19 +114,6 @@ export function PackageDetailDialog({
       `https://wa.me/6282350125334?text=${encodeURIComponent(message)}`,
       "_blank"
     );
-  };
-
-  const handleDownloadPdf = async () => {
-    setIsGeneratingPdf(true);
-    try {
-      await generatePackagePdf(pkg);
-      toast.success("PDF berhasil didownload!");
-    } catch (error) {
-      console.error("Error generating PDF:", error);
-      toast.error("Gagal membuat PDF. Silakan coba lagi.");
-    } finally {
-      setIsGeneratingPdf(false);
-    }
   };
 
   const imageUrl = pkg.cover_image_url || fallbackImage;
@@ -141,45 +149,30 @@ export function PackageDetailDialog({
 
         <ScrollArea className="max-h-[calc(90vh-18rem)]">
           <div className="p-6 space-y-6">
-            {/* Quick Info + Download Button */}
-            <div className="flex flex-wrap items-center justify-between gap-4">
-              <div className="flex flex-wrap gap-4">
-                <div className="flex items-center gap-2 text-muted-foreground">
-                  <Clock className="w-4 h-4 text-primary" />
-                  <span className="text-sm">{pkg.duration_days} Hari</span>
-                </div>
-                {pkg.start_date && (
-                  <div className="flex items-center gap-2 text-muted-foreground">
-                    <Calendar className="w-4 h-4 text-primary" />
-                    <span className="text-sm">{formatDate(pkg.start_date)}</span>
-                  </div>
-                )}
-                {pkg.available_seats && (
-                  <div className="flex items-center gap-2 text-muted-foreground">
-                    <Users className="w-4 h-4 text-primary" />
-                    <span className="text-sm">{pkg.available_seats} Seat</span>
-                  </div>
-                )}
-                {pkg.meeting_point && (
-                  <div className="flex items-center gap-2 text-muted-foreground">
-                    <MapPinned className="w-4 h-4 text-primary" />
-                    <span className="text-sm">{pkg.meeting_point}</span>
-                  </div>
-                )}
+            {/* Quick Info */}
+            <div className="flex flex-wrap gap-4">
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <Clock className="w-4 h-4 text-primary" />
+                <span className="text-sm">{pkg.duration_days} Hari</span>
               </div>
-              <Button
-                onClick={handleDownloadPdf}
-                size="sm"
-                className="gap-2 shrink-0 bg-primary text-primary-foreground hover:bg-primary/90"
-                disabled={isGeneratingPdf}
-              >
-                {isGeneratingPdf ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <Download className="h-4 w-4" />
-                )}
-                Download PDF
-              </Button>
+              {pkg.start_date && (
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <Calendar className="w-4 h-4 text-primary" />
+                  <span className="text-sm">{formatDate(pkg.start_date)}</span>
+                </div>
+              )}
+              {pkg.available_seats && (
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <Users className="w-4 h-4 text-primary" />
+                  <span className="text-sm">{pkg.available_seats} Seat</span>
+                </div>
+              )}
+              {pkg.meeting_point && (
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <MapPinned className="w-4 h-4 text-primary" />
+                  <span className="text-sm">{pkg.meeting_point}</span>
+                </div>
+              )}
             </div>
 
             {/* Description */}
@@ -301,27 +294,111 @@ export function PackageDetailDialog({
             <Separator />
             <div className="bg-muted/30 rounded-xl p-6">
               <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2">
-                💰 Breakdown Harga (Transparan)
+                💰 Informasi Harga
               </h3>
-              <div className="space-y-3">
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Harga Paket</span>
-                  <span className="font-medium text-foreground">{formatPrice(pkg.price)}</span>
-                </div>
-                <Separator />
-                <div className="text-sm text-muted-foreground space-y-2">
-                  <p className="font-medium text-foreground">Estimasi Pengeluaran Tambahan:</p>
-                  <div className="grid grid-cols-2 gap-2 text-xs">
-                    <span>• Makan siang/malam</span>
-                    <span className="text-right">~¥800-2,500/meal</span>
-                    <span>• Belanja/Souvenir</span>
-                    <span className="text-right">Sesuai budget</span>
+
+              {pkg.use_tiered_pricing ? (
+                <div className="space-y-4">
+                  {/* Show all tiers */}
+                  <div className="space-y-2">
+                    {pkg.early_bird_price && (
+                      <div className={`flex justify-between items-center p-3 rounded-lg transition-all ${
+                        pkg.active_pricing_tier === 'early_bird'
+                          ? 'bg-primary/20 border-2 border-primary'
+                          : 'bg-background/50'
+                      }`}>
+                        <div className="flex items-center gap-2">
+                          <span className="text-xl">🐦</span>
+                          <div>
+                            <p className="font-medium">Early Bird</p>
+                            <p className="text-xs text-muted-foreground">Harga untuk pembeli awal</p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-bold text-lg">{formatPrice(pkg.early_bird_price)}</p>
+                          {pkg.active_pricing_tier === 'early_bird' && (
+                            <Badge variant="default" className="text-xs mt-1">Aktif Sekarang</Badge>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    {pkg.regular_price && (
+                      <div className={`flex justify-between items-center p-3 rounded-lg transition-all ${
+                        pkg.active_pricing_tier === 'regular'
+                          ? 'bg-primary/20 border-2 border-primary'
+                          : 'bg-background/50'
+                      }`}>
+                        <div className="flex items-center gap-2">
+                          <span className="text-xl">💰</span>
+                          <div>
+                            <p className="font-medium">Regular Price</p>
+                            <p className="text-xs text-muted-foreground">Harga normal</p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-bold text-lg">{formatPrice(pkg.regular_price)}</p>
+                          {pkg.active_pricing_tier === 'regular' && (
+                            <Badge variant="default" className="text-xs mt-1">Aktif Sekarang</Badge>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    {pkg.last_call_price && (
+                      <div className={`flex justify-between items-center p-3 rounded-lg transition-all ${
+                        pkg.active_pricing_tier === 'last_call'
+                          ? 'bg-primary/20 border-2 border-primary'
+                          : 'bg-background/50'
+                      }`}>
+                        <div className="flex items-center gap-2">
+                          <span className="text-xl">🔥</span>
+                          <div>
+                            <p className="font-medium">Last Call</p>
+                            <p className="text-xs text-muted-foreground">Harga menjelang deadline</p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-bold text-lg">{formatPrice(pkg.last_call_price)}</p>
+                          {pkg.active_pricing_tier === 'last_call' && (
+                            <Badge variant="default" className="text-xs mt-1">Aktif Sekarang</Badge>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="p-3 bg-blue-500/10 rounded-lg text-sm">
+                    <p className="font-semibold text-blue-700 dark:text-blue-400 mb-1">
+                      ℹ️ Tentang Sistem Harga Bertingkat
+                    </p>
+                    <p className="text-muted-foreground text-xs">
+                      Harga berubah sesuai periode pemesanan. Pesan lebih awal untuk harga lebih hemat!
+                    </p>
                   </div>
                 </div>
-                <div className="mt-4 p-3 bg-primary/10 rounded-lg text-sm text-primary">
-                  <strong>💡 Tips:</strong> Siapkan budget ±¥5,000 untuk pengeluaran pribadi
+              ) : (
+                /* Original single price display */
+                <div className="space-y-3">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Harga Paket</span>
+                    <span className="font-medium text-foreground">{formatPrice(pkg.price)}</span>
+                  </div>
+                  <Separator />
+                  <div className="text-sm text-muted-foreground space-y-2">
+                    <p className="font-medium text-foreground">Estimasi Pengeluaran Tambahan:</p>
+                    <div className="grid grid-cols-2 gap-2 text-xs">
+                      <span>• Makan siang/malam</span>
+                      <span className="text-right">~¥800-2,500/meal</span>
+                      <span>• Belanja/Souvenir</span>
+                      <span className="text-right">Sesuai budget</span>
+                    </div>
+                  </div>
+                  <div className="mt-4 p-3 bg-primary/10 rounded-lg text-sm text-primary">
+                    <strong>💡 Tips:</strong> Siapkan budget ±¥5,000 untuk pengeluaran pribadi
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
 
             {/* Payment Info */}
@@ -338,8 +415,13 @@ export function PackageDetailDialog({
         {/* Sticky Footer */}
         <div className="border-t bg-background p-4 flex items-center justify-between gap-3">
           <div className="flex-1 min-w-0">
+            {pkg.use_tiered_pricing && (
+              <span className="text-xs text-muted-foreground block mb-1">
+                {getTierLabel(pkg.active_pricing_tier || 'regular')}
+              </span>
+            )}
             <span className="text-muted-foreground text-sm">Mulai dari</span>
-            <p className="text-xl md:text-2xl font-bold text-primary">{formatPrice(pkg.price)}</p>
+            <p className="text-xl md:text-2xl font-bold text-primary">{formatPrice(getActivePrice(pkg))}</p>
             <span className="text-xs text-muted-foreground">*tanpa hidden cost</span>
           </div>
           <div className="flex gap-2">

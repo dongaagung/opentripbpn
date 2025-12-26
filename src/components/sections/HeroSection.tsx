@@ -11,7 +11,7 @@ interface HeroStat {
   display_order: number;
 }
 
-// Dynamic image component with smooth fade transition
+// Dynamic image component with smooth crossfade and Ken Burns effect
 const DynamicImage = ({
   images,
   interval = 7000,
@@ -26,37 +26,71 @@ const DynamicImage = ({
   priority?: boolean;
 }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [displayedImage, setDisplayedImage] = useState(images[0] || '');
-  const [isVisible, setIsVisible] = useState(true);
+  const [nextIndex, setNextIndex] = useState(1 % images.length);
+  const [isTransitioning, setIsTransitioning] = useState(false);
+
   useEffect(() => {
     if (images.length <= 1) return;
+
     const timer = setInterval(() => {
-      // Start fade out
-      setIsVisible(false);
+      setIsTransitioning(true);
 
-      // After fade out completes, change image and fade in
+      // After transition starts, prepare next image
       setTimeout(() => {
-        setCurrentIndex(prev => {
-          const next = (prev + 1) % images.length;
-          setDisplayedImage(images[next]);
-          return next;
-        });
-        setIsVisible(true);
-      }, 800); // Wait for fade out to complete
+        setCurrentIndex(nextIndex);
+        setNextIndex((nextIndex + 1) % images.length);
+        setIsTransitioning(false);
+      }, 1500); // Match transition duration
     }, interval);
-    return () => clearInterval(timer);
-  }, [images.length, interval, images]);
 
-  // Update displayed image when images array changes
+    return () => clearInterval(timer);
+  }, [images.length, interval, nextIndex, images]);
+
+  // Update indices when images array changes
   useEffect(() => {
-    if (images.length > 0 && images[currentIndex]) {
-      setDisplayedImage(images[currentIndex]);
+    if (images.length > 0) {
+      setCurrentIndex(0);
+      setNextIndex(1 % images.length);
     }
-  }, [images, currentIndex]);
-  if (images.length === 0 || !displayedImage) return null;
-  return <div className="absolute inset-0 overflow-hidden">
-      <img src={displayedImage} alt={alt} className={`${className} absolute inset-0 transition-opacity duration-[800ms] ease-in-out ${isVisible ? 'opacity-100' : 'opacity-0'}`} loading={priority ? "eager" : "lazy"} />
-    </div>;
+  }, [images]);
+
+  if (images.length === 0) return null;
+
+  return (
+    <div className="absolute inset-0 overflow-hidden">
+      {/* Current Image - Smooth crossfade with Ken Burns zoom */}
+      <img
+        src={images[currentIndex] || images[0]}
+        alt={alt}
+        className={`${className} absolute inset-0 transition-all duration-[1500ms] ease-cinematic ${
+          isTransitioning
+            ? 'opacity-0 scale-[1.03]'
+            : 'opacity-100 scale-100'
+        }`}
+        loading={priority ? "eager" : "lazy"}
+        style={{
+          transformOrigin: 'center center'
+        }}
+      />
+
+      {/* Next Image - Fades in with subtle zoom */}
+      {images[nextIndex] && (
+        <img
+          src={images[nextIndex]}
+          alt={alt}
+          className={`${className} absolute inset-0 transition-all duration-[1500ms] ease-cinematic ${
+            isTransitioning
+              ? 'opacity-100 scale-100'
+              : 'opacity-0 scale-[1.05]'
+          }`}
+          loading="lazy"
+          style={{
+            transformOrigin: 'center center'
+          }}
+        />
+      )}
+    </div>
+  );
 };
 const HeroSection = () => {
   const {
@@ -78,56 +112,60 @@ const HeroSection = () => {
     fetchHeroStats();
   }, []);
 
-  // Shuffle and distribute images for each card - ensuring no duplicates across cards at the same index
+  // Distribute images ensuring NO slideshow shows the same image at any time
   const shuffledImageSets = useMemo(() => {
     if (images.length === 0) return {
       hero: [],
       tokyo: [],
       kyoto: []
     };
+
     const allUrls = images.map(img => img.file_url);
 
-    // Fisher-Yates shuffle with seed offset for different starting points
-    const shuffleWithOffset = (arr: string[], offset: number) => {
-      const shuffled = [...arr];
-      // Apply offset rotation first
-      for (let i = 0; i < offset; i++) {
-        const first = shuffled.shift();
-        if (first) shuffled.push(first);
-      }
-      // Then shuffle
-      for (let i = shuffled.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-      }
-      return shuffled;
-    };
+    // Shuffle all images once using Fisher-Yates
+    const shuffled = [...allUrls];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
 
-    // Create different sets with different starting indices to avoid same image showing
-    const heroSet = shuffleWithOffset(allUrls, 0);
-    const tokyoSet = shuffleWithOffset(allUrls, Math.floor(allUrls.length / 3));
-    const kyotoSet = shuffleWithOffset(allUrls, Math.floor(allUrls.length * 2 / 3));
+    // Distribute images to 3 exclusive sets (no overlap)
+    const heroSet: string[] = [];
+    const tokyoSet: string[] = [];
+    const kyotoSet: string[] = [];
 
-    // Ensure first images are different across all cards
-    const usedFirstImages = new Set<string>();
-    const getUniqueFirstImage = (arr: string[]): string[] => {
-      const result = [...arr];
-      // Find first unused image and move it to front
-      for (let i = 0; i < result.length; i++) {
-        if (!usedFirstImages.has(result[i])) {
-          usedFirstImages.add(result[i]);
-          // Move this image to front
-          const [chosen] = result.splice(i, 1);
-          result.unshift(chosen);
-          break;
-        }
-      }
-      return result;
-    };
+    shuffled.forEach((url, index) => {
+      const group = index % 3;
+      if (group === 0) heroSet.push(url);
+      else if (group === 1) tokyoSet.push(url);
+      else kyotoSet.push(url);
+    });
+
+    // Edge case: if less than 3 images, each slideshow gets all images
+    // but starts at different index to minimize overlap
+    if (allUrls.length < 3) {
+      return {
+        hero: [...allUrls],
+        tokyo: [...allUrls].reverse(),
+        kyoto: [...allUrls].sort(() => Math.random() - 0.5)
+      };
+    }
+
+    // Ensure each set has at least 1 image
+    const minImages = Math.min(heroSet.length, tokyoSet.length, kyotoSet.length);
+    if (minImages === 0) {
+      // Redistribute if any set is empty
+      return {
+        hero: shuffled.filter((_, i) => i % 3 === 0),
+        tokyo: shuffled.filter((_, i) => i % 3 === 1),
+        kyoto: shuffled.filter((_, i) => i % 3 === 2)
+      };
+    }
+
     return {
-      hero: getUniqueFirstImage(heroSet),
-      tokyo: getUniqueFirstImage(tokyoSet),
-      kyoto: getUniqueFirstImage(kyotoSet)
+      hero: heroSet,
+      tokyo: tokyoSet,
+      kyoto: kyotoSet
     };
   }, [images]);
   const scrollToPackages = () => {
@@ -164,9 +202,9 @@ const HeroSection = () => {
         {/* Mobile: Compact 2-column grid, Desktop: Full bento */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6 mt-4 md:mt-8">
           {/* Main Hero Card - Full width on mobile */}
-          <BentoCard variant="default" size="large" className="col-span-2 md:col-span-2 lg:col-span-2 relative overflow-hidden min-h-[280px] md:min-h-[400px] lg:min-h-[500px] animate-fade-up" hover={true} hoverEffect="zoom">
+          <BentoCard variant="default" size="large" className="col-span-2 md:col-span-2 lg:col-span-2 relative min-h-[280px] md:min-h-[400px] lg:min-h-[500px] animate-fade-up" hover={true} hoverEffect="zoom">
             {shuffledImageSets.hero.length > 0 && <DynamicImage images={shuffledImageSets.hero} interval={10000} alt="Japan destination" className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" priority />}
-            <div className="absolute inset-0 bg-gradient-to-t from-card-foreground/90 via-card-foreground/30 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-card-foreground/90 via-card-foreground/30 to-transparent pointer-events-none" />
             <div className="absolute bottom-0 left-0 right-0 p-4 md:p-6 lg:p-8">
               {/* Emotional Headline - Smaller on mobile */}
               <h1 className="text-xl sm:text-2xl md:text-4xl lg:text-5xl font-bold text-bento-cream mb-2 md:mb-3 leading-tight">
@@ -232,11 +270,11 @@ const HeroSection = () => {
             </div>
           </BentoCard>
 
-          {/* Tokyo Preview Card - Hidden on mobile, show on sm+ */}
-          <BentoCard variant="default" className="hidden sm:block col-span-1 relative overflow-hidden min-h-[140px] md:min-h-[200px] animate-fade-up delay-200" hover={true} hoverEffect="tilt">
+          {/* Tokyo Preview Card - Show on all screens */}
+          <BentoCard variant="default" className="col-span-1 relative min-h-[140px] md:min-h-[200px] animate-fade-up delay-200" hover={true} hoverEffect="tilt">
             {shuffledImageSets.tokyo.length > 0 && <DynamicImage images={shuffledImageSets.tokyo} interval={13000} alt="Gallery preview" className="absolute inset-0 w-full h-full object-cover" />}
-            <div className="absolute inset-0 bg-gradient-to-t from-card-foreground/70 to-transparent" />
-            <div className="absolute bottom-0 left-0 right-0 p-3 md:p-4">
+            <div className="absolute inset-0 bg-gradient-to-t from-card-foreground/70 to-transparent pointer-events-none" />
+            <div className="absolute bottom-0 left-0 right-0 p-3 md:p-4 pointer-events-none">
               <div className="flex items-center gap-2 text-bento-cream">
                 <MapPin className="w-3 h-3 md:w-4 md:h-4" />
                 <span className="font-semibold text-sm md:text-base">Tokyo</span>
@@ -269,11 +307,11 @@ const HeroSection = () => {
             <p className="text-bento-cream/70 mt-2 md:mt-4 text-[10px] md:text-sm">Your Japan Travel Partner</p>
           </BentoCard>
 
-          {/* Kyoto Preview Card - Hidden on very small, show on sm+ */}
-          <BentoCard variant="default" size="tall" className="hidden sm:block col-span-1 relative overflow-hidden min-h-[140px] md:min-h-[200px] animate-fade-up delay-400" hover={true} hoverEffect="float">
+          {/* Kyoto Preview Card - Show on all screens */}
+          <BentoCard variant="default" size="tall" className="col-span-1 relative min-h-[140px] md:min-h-[200px] animate-fade-up delay-400" hover={true} hoverEffect="float">
             {shuffledImageSets.kyoto.length > 0 && <DynamicImage images={shuffledImageSets.kyoto} interval={16000} alt="Gallery preview" className="absolute inset-0 w-full h-full object-cover" />}
-            <div className="absolute inset-0 bg-gradient-to-t from-card-foreground/70 to-transparent" />
-            <div className="absolute bottom-0 left-0 right-0 p-3 md:p-4">
+            <div className="absolute inset-0 bg-gradient-to-t from-card-foreground/70 to-transparent pointer-events-none" />
+            <div className="absolute bottom-0 left-0 right-0 p-3 md:p-4 pointer-events-none">
               <div className="flex items-center gap-2 text-bento-cream mb-1 md:mb-2">
                 <MapPin className="w-3 h-3 md:w-4 md:h-4" />
                 <span className="font-semibold text-sm md:text-base">Kyoto</span>

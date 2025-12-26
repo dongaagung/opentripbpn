@@ -123,8 +123,8 @@ const Navbar = () => {
       {/* Mobile Navigation - Moved outside nav for proper positioning */}
       <div
         className={`md:hidden fixed left-0 right-0 z-40 bg-background/98 backdrop-blur-xl border-t border-border transition-all duration-500 ease-out ${
-          isOpen 
-            ? "top-16 bottom-0 opacity-100 visible" 
+          isOpen
+            ? "top-16 bottom-0 opacity-100 visible"
             : "top-16 -bottom-full opacity-0 invisible pointer-events-none"
         }`}
       >
@@ -138,15 +138,15 @@ const Navbar = () => {
                   e.preventDefault();
                   handleNavClick(link.href);
                 }}
-                className="flex items-center gap-4 py-4 px-4 rounded-xl text-foreground hover:bg-primary/10 hover:text-primary font-medium transition-all duration-300 border border-transparent hover:border-primary/20"
-                style={{ 
+                className={`flex items-center gap-4 py-4 px-4 rounded-xl font-medium transition-all duration-300 bg-card text-card-foreground hover:bg-primary hover:text-primary-foreground border border-border hover:border-primary active:scale-95 ${
+                  isOpen ? "animate-in slide-in-from-left fade-in" : ""
+                }`}
+                style={{
                   animationDelay: `${index * 50}ms`,
-                  opacity: isOpen ? 1 : 0,
-                  transform: isOpen ? 'translateX(0)' : 'translateX(-20px)',
-                  transition: `all 0.3s ease ${index * 50}ms`
+                  animationFillMode: 'both'
                 }}
               >
-                <span className="w-2 h-2 rounded-full bg-primary/40" />
+                <span className="w-2 h-2 rounded-full bg-primary transition-colors group-hover:bg-primary-foreground" />
                 {link.label}
               </a>
             ))}

@@ -284,6 +284,11 @@ export default {
   			lg: 'var(--shadow-lg)',
   			xl: 'var(--shadow-xl)',
   			'2xl': 'var(--shadow-2xl)'
+  		},
+  		transitionTimingFunction: {
+  			'smooth': 'cubic-bezier(0.4, 0, 0.2, 1)',
+  			'cinematic': 'cubic-bezier(0.25, 0.1, 0.25, 1)',
+  			'elegant': 'cubic-bezier(0.33, 0, 0.2, 1)'
   		}
   	}
   },

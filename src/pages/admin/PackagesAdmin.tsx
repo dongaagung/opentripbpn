@@ -6,9 +6,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
+import { Badge } from '@/components/ui/badge';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Pencil, Trash2, Loader2, Upload, Calendar, MapPin, Download } from 'lucide-react';
-import { generatePackagePdf } from '@/lib/generatePackagePdf';
+import { Plus, Pencil, Trash2, Loader2, Upload, Calendar, MapPin } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -42,6 +43,12 @@ interface TripPackage {
   exclusions: string[];
   meeting_point: string | null;
   departure_time: string | null;
+  // Pricing tiers fields
+  use_tiered_pricing: boolean;
+  active_pricing_tier: 'early_bird' | 'regular' | 'last_call';
+  early_bird_price: number | null;
+  regular_price: number | null;
+  last_call_price: number | null;
 }
 
 const parseItinerary = (data: Json | null): ItineraryItem[] => {
@@ -84,6 +91,12 @@ export default function PackagesAdmin() {
     exclusions: '',
     meeting_point: '',
     departure_time: '',
+    // Pricing tiers fields
+    use_tiered_pricing: false,
+    active_pricing_tier: 'regular' as 'early_bird' | 'regular' | 'last_call',
+    early_bird_price: null as number | null,
+    regular_price: null as number | null,
+    last_call_price: null as number | null,
   });
 
   const fetchPackages = async () => {
@@ -137,6 +150,11 @@ export default function PackagesAdmin() {
       exclusions: '',
       meeting_point: '',
       departure_time: '',
+      use_tiered_pricing: false,
+      active_pricing_tier: 'regular',
+      early_bird_price: null,
+      regular_price: null,
+      last_call_price: null,
     });
     setEditingPackage(null);
   };
@@ -183,6 +201,11 @@ export default function PackagesAdmin() {
         exclusions: pkg.exclusions?.join('\n') || '',
         meeting_point: pkg.meeting_point || '',
         departure_time: pkg.departure_time || '',
+        use_tiered_pricing: pkg.use_tiered_pricing || false,
+        active_pricing_tier: pkg.active_pricing_tier || 'regular',
+        early_bird_price: pkg.early_bird_price,
+        regular_price: pkg.regular_price,
+        last_call_price: pkg.last_call_price,
       });
     } else {
       resetForm();
@@ -255,6 +278,12 @@ export default function PackagesAdmin() {
         exclusions: formData.exclusions.split('\n').filter(h => h.trim()),
         meeting_point: formData.meeting_point || null,
         departure_time: formData.departure_time || null,
+        // Pricing tiers data
+        use_tiered_pricing: formData.use_tiered_pricing,
+        active_pricing_tier: formData.active_pricing_tier,
+        early_bird_price: formData.early_bird_price,
+        regular_price: formData.regular_price,
+        last_call_price: formData.last_call_price,
       };
 
       if (editingPackage) {
@@ -319,6 +348,20 @@ export default function PackagesAdmin() {
     }).format(price);
   };
 
+  const getActivePrice = (pkg: TripPackage): number => {
+    if (!pkg.use_tiered_pricing) return pkg.price;
+
+    switch (pkg.active_pricing_tier) {
+      case 'early_bird':
+        return pkg.early_bird_price ?? pkg.regular_price ?? pkg.price;
+      case 'last_call':
+        return pkg.last_call_price ?? pkg.regular_price ?? pkg.price;
+      case 'regular':
+      default:
+        return pkg.regular_price ?? pkg.price;
+    }
+  };
+
   return (
     <div>
       <AdminHeader 
@@ -375,9 +418,18 @@ export default function PackagesAdmin() {
                       {pkg.is_active ? 'Aktif' : 'Nonaktif'}
                     </span>
                   </div>
-                  <p className="text-lg font-bold text-primary mb-2">
-                    {formatPrice(pkg.price)}
-                  </p>
+                  <div className="flex items-baseline gap-2 mb-2">
+                    <p className="text-lg font-bold text-primary">
+                      {formatPrice(getActivePrice(pkg))}
+                    </p>
+                    {pkg.use_tiered_pricing && (
+                      <Badge variant="secondary" className="text-xs">
+                        {pkg.active_pricing_tier === 'early_bird' && '🐦 Early Bird'}
+                        {pkg.active_pricing_tier === 'regular' && '💰 Regular'}
+                        {pkg.active_pricing_tier === 'last_call' && '🔥 Last Call'}
+                      </Badge>
+                    )}
+                  </div>
                   <p className="text-sm text-muted-foreground mb-2">
                     {pkg.duration_days} Hari • {pkg.available_seats} Seat
                   </p>
@@ -405,14 +457,6 @@ export default function PackagesAdmin() {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => generatePackagePdf(pkg)}
-                      title="Download PDF"
-                    >
-                      <Download size={16} />
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
                       onClick={() => handleDelete(pkg.id)}
                       className="text-destructive hover:text-destructive"
                     >
@@ -436,10 +480,11 @@ export default function PackagesAdmin() {
 
           <form onSubmit={handleSubmit}>
             <Tabs defaultValue="basic" className="w-full">
-              <TabsList className="grid w-full grid-cols-3 mb-4">
+              <TabsList className="grid w-full grid-cols-4 mb-4">
                 <TabsTrigger value="basic">Info Dasar</TabsTrigger>
                 <TabsTrigger value="itinerary">Itinerary</TabsTrigger>
                 <TabsTrigger value="details">Detail Lainnya</TabsTrigger>
+                <TabsTrigger value="pricing">Harga</TabsTrigger>
               </TabsList>
 
               <TabsContent value="basic" className="space-y-4">
@@ -466,7 +511,7 @@ export default function PackagesAdmin() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-3 gap-4">
+                <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="duration">Durasi (Hari)</Label>
                     <Input
@@ -475,17 +520,6 @@ export default function PackagesAdmin() {
                       value={formData.duration_days}
                       onChange={(e) => setFormData({ ...formData, duration_days: parseInt(e.target.value) })}
                       min={1}
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="price">Harga (IDR)</Label>
-                    <Input
-                      id="price"
-                      type="number"
-                      value={formData.price}
-                      onChange={(e) => setFormData({ ...formData, price: parseInt(e.target.value) })}
-                      min={0}
                       required
                     />
                   </div>
@@ -648,6 +682,160 @@ export default function PackagesAdmin() {
                     rows={5}
                   />
                 </div>
+              </TabsContent>
+
+              <TabsContent value="pricing" className="space-y-6">
+                {/* Toggle Tiered Pricing */}
+                <div className="flex items-center gap-2 p-4 bg-muted/30 rounded-lg">
+                  <Switch
+                    id="use_tiered_pricing"
+                    checked={formData.use_tiered_pricing}
+                    onCheckedChange={(checked) => {
+                      setFormData({
+                        ...formData,
+                        use_tiered_pricing: checked,
+                        regular_price: checked && !formData.regular_price ? formData.price : formData.regular_price
+                      });
+                    }}
+                  />
+                  <Label htmlFor="use_tiered_pricing" className="font-semibold">
+                    Gunakan Sistem Harga Bertingkat (3-Tier Pricing)
+                  </Label>
+                </div>
+
+                {/* Single Price (when tiered pricing disabled) */}
+                {!formData.use_tiered_pricing && (
+                  <div className="space-y-2">
+                    <Label htmlFor="price">Harga Paket (IDR)</Label>
+                    <Input
+                      id="price"
+                      type="number"
+                      value={formData.price}
+                      onChange={(e) => setFormData({ ...formData, price: parseInt(e.target.value) })}
+                      min={0}
+                      required
+                    />
+                    <p className="text-xs text-muted-foreground">Harga tunggal untuk paket ini</p>
+                  </div>
+                )}
+
+                {/* Tiered Pricing (when enabled) */}
+                {formData.use_tiered_pricing && (
+                  <>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      {/* Early Bird Price */}
+                      <div className="space-y-2">
+                        <Label htmlFor="early_bird_price">
+                          🐦 Early Bird Price <span className="text-xs text-muted-foreground">(Opsional)</span>
+                        </Label>
+                        <Input
+                          id="early_bird_price"
+                          type="number"
+                          value={formData.early_bird_price ?? ''}
+                          onChange={(e) => setFormData({
+                            ...formData,
+                            early_bird_price: e.target.value ? parseInt(e.target.value) : null
+                          })}
+                          min={0}
+                          placeholder="Contoh: 3000000"
+                        />
+                        <p className="text-xs text-muted-foreground">Harga untuk pembeli awal</p>
+                      </div>
+
+                      {/* Regular Price */}
+                      <div className="space-y-2">
+                        <Label htmlFor="regular_price">
+                          💰 Regular Price <span className="text-xs text-primary">(Wajib)</span>
+                        </Label>
+                        <Input
+                          id="regular_price"
+                          type="number"
+                          value={formData.regular_price ?? ''}
+                          onChange={(e) => setFormData({
+                            ...formData,
+                            regular_price: e.target.value ? parseInt(e.target.value) : null
+                          })}
+                          min={0}
+                          placeholder="Contoh: 3500000"
+                          required={formData.use_tiered_pricing}
+                        />
+                        <p className="text-xs text-muted-foreground">Harga standar/normal</p>
+                      </div>
+
+                      {/* Last Call Price */}
+                      <div className="space-y-2">
+                        <Label htmlFor="last_call_price">
+                          🔥 Last Call Price <span className="text-xs text-muted-foreground">(Opsional)</span>
+                        </Label>
+                        <Input
+                          id="last_call_price"
+                          type="number"
+                          value={formData.last_call_price ?? ''}
+                          onChange={(e) => setFormData({
+                            ...formData,
+                            last_call_price: e.target.value ? parseInt(e.target.value) : null
+                          })}
+                          min={0}
+                          placeholder="Contoh: 4000000"
+                        />
+                        <p className="text-xs text-muted-foreground">Harga menjelang deadline</p>
+                      </div>
+                    </div>
+
+                    {/* Active Tier Selector */}
+                    <div className="space-y-2">
+                      <Label>Tier Harga yang Aktif Saat Ini</Label>
+                      <RadioGroup
+                        value={formData.active_pricing_tier}
+                        onValueChange={(value) => setFormData({
+                          ...formData,
+                          active_pricing_tier: value as 'early_bird' | 'regular' | 'last_call'
+                        })}
+                        className="flex gap-4"
+                      >
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem
+                            value="early_bird"
+                            id="tier_early_bird"
+                            disabled={!formData.early_bird_price}
+                          />
+                          <Label htmlFor="tier_early_bird" className="cursor-pointer">🐦 Early Bird</Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem value="regular" id="tier_regular" />
+                          <Label htmlFor="tier_regular" className="cursor-pointer">💰 Regular</Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem
+                            value="last_call"
+                            id="tier_last_call"
+                            disabled={!formData.last_call_price}
+                          />
+                          <Label htmlFor="tier_last_call" className="cursor-pointer">🔥 Last Call</Label>
+                        </div>
+                      </RadioGroup>
+                      <p className="text-xs text-muted-foreground">
+                        Customer akan melihat harga dari tier yang aktif
+                      </p>
+                    </div>
+
+                    {/* Pricing Preview */}
+                    <div className="p-4 bg-primary/10 rounded-lg space-y-2">
+                      <p className="font-semibold text-sm">Preview Harga:</p>
+                      <div className="grid grid-cols-3 gap-2 text-sm">
+                        <div className={formData.active_pricing_tier === 'early_bird' ? 'font-bold text-primary' : ''}>
+                          Early Bird: {formData.early_bird_price ? formatPrice(formData.early_bird_price) : '-'}
+                        </div>
+                        <div className={formData.active_pricing_tier === 'regular' ? 'font-bold text-primary' : ''}>
+                          Regular: {formData.regular_price ? formatPrice(formData.regular_price) : '-'}
+                        </div>
+                        <div className={formData.active_pricing_tier === 'last_call' ? 'font-bold text-primary' : ''}>
+                          Last Call: {formData.last_call_price ? formatPrice(formData.last_call_price) : '-'}
+                        </div>
+                      </div>
+                    </div>
+                  </>
+                )}
               </TabsContent>
             </Tabs>
 
