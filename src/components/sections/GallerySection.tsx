@@ -41,8 +41,26 @@ const GallerySection = () => {
   const [selectedItem, setSelectedItem] = useState<GalleryItem | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [analyzingIds, setAnalyzingIds] = useState<Set<string>>(new Set());
+  const [showAll, setShowAll] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const analysisQueueRef = useRef<string[]>([]);
   const isAnalyzingRef = useRef(false);
+
+  // Detect mobile screen size
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  // Reset showAll when category changes
+  useEffect(() => {
+    setShowAll(false);
+  }, [activeCategory]);
 
   // Hide navbar / floating elements while lightbox is open
   useEffect(() => {
@@ -150,9 +168,15 @@ const GallerySection = () => {
     }
   };
 
-  const filteredItems = activeCategory === "Semua" 
-    ? galleryItems 
+  const filteredItems = activeCategory === "Semua"
+    ? galleryItems
     : galleryItems.filter(item => item.category === activeCategory);
+
+  // Limit items on mobile unless "showAll" is true
+  const MOBILE_LIMIT = 8;
+  const displayItems = (isMobile && !showAll)
+    ? filteredItems.slice(0, MOBILE_LIMIT)
+    : filteredItems;
 
   const getOverlayColor = (item: GalleryItem, index: number) => {
     return item.overlayColor || defaultColors[index % defaultColors.length];
@@ -247,7 +271,7 @@ const GallerySection = () => {
 
         {/* Bento Grid Gallery */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 auto-rows-[180px] md:auto-rows-[220px]">
-          {filteredItems.map((item, index) => {
+          {displayItems.map((item, index) => {
             const overlayColor = getOverlayColor(item, index);
             const isAnalyzing = analyzingIds.has(item.id);
             const hoverEffect = getHoverEffect(index);
@@ -325,6 +349,28 @@ const GallerySection = () => {
             );
           })}
         </div>
+
+        {/* Show More/Less Button - Only on mobile when there are more items */}
+        {isMobile && filteredItems.length > MOBILE_LIMIT && (
+          <div className="flex justify-center mt-8">
+            <button
+              onClick={() => setShowAll(!showAll)}
+              className="px-6 py-3 rounded-xl bg-primary text-primary-foreground font-medium shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 active:scale-95 flex items-center gap-2"
+            >
+              {showAll ? (
+                <>
+                  <span>Tampilkan Lebih Sedikit</span>
+                  <span className="text-xs opacity-80">({filteredItems.length - MOBILE_LIMIT} foto disembunyikan)</span>
+                </>
+              ) : (
+                <>
+                  <span>Lihat Lebih Banyak</span>
+                  <span className="text-xs opacity-80">({filteredItems.length - MOBILE_LIMIT} foto lagi)</span>
+                </>
+              )}
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Lightbox */}

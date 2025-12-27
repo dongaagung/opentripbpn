@@ -1,0 +1,14 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background rounded square with primary color (red) -->
+  <rect width="512" height="512" rx="90" fill="#DC5240"/>
+
+  <!-- Plane icon in white - much larger and centered -->
+  <path
+    d="M 356.668 358.4 L 333.334 201.664 L 400 135 C 409.664 125.336 409.664 109.664 400 100 C 390.336 90.336 374.664 90.336 365 100 L 298.334 166.668 L 141.6 143.332 C 136.664 142.496 131.832 142.496 127.664 144.336 L 100 172 C 93.336 178.664 93.336 189.336 100 196 L 196 292 L 129.336 358.668 C 119.672 368.332 119.672 383.996 129.336 393.668 C 138.996 403.332 154.668 403.332 164.332 393.668 L 231 327 L 326.996 423 C 333.66 429.664 344.332 429.664 350.996 423 L 378.66 395.336 C 380.5 391.168 380.5 386 379.668 381.332 Z"
+    fill="white"
+    stroke="white"
+    stroke-width="8"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+</svg>

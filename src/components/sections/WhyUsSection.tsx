@@ -173,8 +173,8 @@ const WhyUsSection = () => {
                     <p className="text-[10px] md:text-sm text-foreground line-clamp-2 md:line-clamp-none">{item.our_way_description}</p>
                   </div>
                   
-                  {/* Old Way - Hidden on very small screens */}
-                  <div className="hidden sm:block p-2 md:p-4 rounded-lg md:rounded-xl bg-muted/30 border border-border">
+                  {/* Old Way - Now visible on all screens */}
+                  <div className="p-2 md:p-4 rounded-lg md:rounded-xl bg-muted/30 border border-border">
                     <div className="flex items-center gap-1 md:gap-2 mb-1 md:mb-2">
                       <span className="text-[10px] md:text-xs font-bold uppercase tracking-wider text-muted-foreground">🚌 {item.other_way_title}</span>
                     </div>
