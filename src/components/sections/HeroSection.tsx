@@ -296,7 +296,7 @@ const HeroSection = () => {
             </div>
             <div className="mt-2 border-t border-border pt-2">
               <span className="text-[10px] text-foreground/60">Mulai dari</span>
-              <p className="text-lg font-bold text-primary">IDR 17jt</p>
+              <p className="text-lg font-bold text-primary">IDR 16jt</p>
             </div>
           </BentoCard>
 
@@ -340,7 +340,7 @@ const HeroSection = () => {
             <p className="text-card-foreground/80 text-sm mb-3">Siap untuk petualangan?</p>
             <p className="text-xl font-bold text-card-foreground mb-4">Mulai dari</p>
             <div className="flex items-baseline gap-1">
-              <span className="text-3xl font-bold text-primary">IDR 17jt</span>
+              <span className="text-3xl font-bold text-primary">IDR 16jt</span>
               <span className="text-lg text-primary">juta</span>
             </div>
             <p className="text-card-foreground/60 text-xs mt-2">*per orang</p>
