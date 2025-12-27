@@ -170,15 +170,15 @@ const WhyUsSection = () => {
                     <div className="flex items-center gap-1 md:gap-2 mb-1 md:mb-2">
                       <span className="text-[10px] md:text-xs font-bold uppercase tracking-wider text-primary">🚶 {item.our_way_title}</span>
                     </div>
-                    <p className="text-[10px] md:text-sm text-foreground line-clamp-2 md:line-clamp-none">{item.our_way_description}</p>
+                    <p className="text-[10px] md:text-sm text-foreground line-clamp-3 md:line-clamp-none">{item.our_way_description}</p>
                   </div>
-                  
+
                   {/* Old Way - Now visible on all screens */}
                   <div className="p-2 md:p-4 rounded-lg md:rounded-xl bg-muted/30 border border-border">
                     <div className="flex items-center gap-1 md:gap-2 mb-1 md:mb-2">
                       <span className="text-[10px] md:text-xs font-bold uppercase tracking-wider text-muted-foreground">🚌 {item.other_way_title}</span>
                     </div>
-                    <p className="text-[10px] md:text-sm text-muted-foreground line-clamp-2 md:line-clamp-none">{item.other_way_description}</p>
+                    <p className="text-[10px] md:text-sm text-muted-foreground line-clamp-3 md:line-clamp-none">{item.other_way_description}</p>
                   </div>
                 </BentoCard>
               ))}
